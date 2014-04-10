@@ -1,14 +1,20 @@
 package de.unimannheim.becker.todo;
 
+import java.util.Locale;
+
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -106,16 +112,16 @@ public class FirstActivity extends Activity {
     /** Swaps fragments in the main content view */
     private void selectItem(int position) {
         // Create a new fragment and specify the planet to show based on position
-//        Fragment fragment = new PlanetFragment();
-//        Bundle args = new Bundle();
-//        args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
-//        fragment.setArguments(args);
-//
-//        // Insert the fragment by replacing any existing fragment
-//        FragmentManager fragmentManager = getFragmentManager();
-//        fragmentManager.beginTransaction()
-//                       .replace(R.id.content_frame, fragment)
-//                       .commit();
+          Fragment fragment = new TheNewFragment();
+          Bundle args = new Bundle();
+          args.putInt(TheNewFragment.ARG_MENU_ITEM_NUMBER, position);
+          fragment.setArguments(args);
+
+          // Insert the fragment by replacing any existing fragment
+          FragmentManager fragmentManager = getFragmentManager();
+          fragmentManager.beginTransaction()
+                       .replace(R.id.fullscreen_content, fragment)
+                       .commit();
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -127,5 +133,36 @@ public class FirstActivity extends Activity {
     public void setTitle(CharSequence title) {
         mTitle = title;
         getActionBar().setTitle(mTitle);
+    }
+    
+    /**
+     * Fragment that appears in the "content_frame", change the view
+     */
+    public static class TheNewFragment extends Fragment {
+        public static final String ARG_MENU_ITEM_NUMBER = "planet_number";
+
+        public TheNewFragment() {
+            // Empty constructor required for fragment subclasses
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            // @todo change the view
+            View rootView = inflater.inflate(R.layout.fragment_planet, container, false);
+            // here we get the id of the clicked item from the list
+            // switch/case
+            int i = getArguments().getInt(ARG_MENU_ITEM_NUMBER);
+            // get the title from the strings
+            String planet = getResources().getStringArray(R.array.planets_array)[i];
+
+            // load the image and the layout
+            int imageId = getResources().getIdentifier(planet.toLowerCase(Locale.getDefault()),
+                            "drawable", getActivity().getPackageName());
+            ((ImageView) rootView.findViewById(R.id.image)).setImageResource(imageId);
+            
+            getActivity().setTitle(planet);
+            return rootView;
+        }
     }
 }
