@@ -34,7 +34,7 @@ public class FirstActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // if no items first, if items - cards view
+        // if no cards first, if items - cards view
         setContentView(R.layout.activity_first);
         
         // @Todo rename
