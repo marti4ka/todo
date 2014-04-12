@@ -17,6 +17,15 @@
             android:name="de.unimannheim.becker.todo.FirstActivity"
             android:label="@string/app_name">
             
+       <!--    <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>   --> 
+            
+        </activity>
+        <activity
+            android:name="de.unimannheim.becker.todo.CardsActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
