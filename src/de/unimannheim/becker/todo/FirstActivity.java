@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 public class FirstActivity extends Activity {
     // @Todo rename
-    private String[] mPlanetTitles;
+    private String[] mMenuListTitles;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private CharSequence mDrawerTitle;
@@ -38,7 +38,7 @@ public class FirstActivity extends Activity {
         setContentView(R.layout.activity_first);
         
         // @Todo rename
-        mPlanetTitles = getResources().getStringArray(R.array.planets_array);
+        mMenuListTitles = getResources().getStringArray(R.array.menu_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mTitle = mDrawerTitle = getTitle();
@@ -47,7 +47,7 @@ public class FirstActivity extends Activity {
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mPlanetTitles));
+                R.layout.drawer_list_item, mMenuListTitles));
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
@@ -56,7 +56,7 @@ public class FirstActivity extends Activity {
         
         // Set the adapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mPlanetTitles));
+                R.layout.drawer_list_item, mMenuListTitles));
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -163,7 +163,7 @@ public class FirstActivity extends Activity {
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mPlanetTitles[position]);
+        setTitle(mMenuListTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
@@ -192,7 +192,7 @@ public class FirstActivity extends Activity {
             // switch/case
             int i = getArguments().getInt(ARG_MENU_ITEM_NUMBER);
             // get the title from the strings
-            String planet = getResources().getStringArray(R.array.planets_array)[i];
+            String planet = getResources().getStringArray(R.array.menu_array)[i];
 
             // load the image and the layout
             int imageId = getResources().getIdentifier(planet.toLowerCase(Locale.getDefault()),
