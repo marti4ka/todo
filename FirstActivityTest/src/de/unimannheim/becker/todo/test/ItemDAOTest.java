@@ -1,0 +1,46 @@
+package de.unimannheim.becker.todo.test;
+
+import android.test.ActivityInstrumentationTestCase2;
+import de.unimannheim.becker.todo.md.CardsActivity;
+import de.unimannheim.becker.todo.md.model.Item;
+import de.unimannheim.becker.todo.md.model.ItemDAO;
+
+public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity> {
+
+	public ItemDAOTest() {
+		super(CardsActivity.class);
+	}
+
+	private ItemDAO sut;
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+
+		// Intent mLaunchIntent = new
+		// Intent(getInstrumentation().getTargetContext(), CardsActivity.class);
+		// startActivity(mLaunchIntent, null, null);
+
+		sut = new ItemDAO(getInstrumentation().getTargetContext());
+	}
+
+	public void testStoreItem() throws Exception {
+		assertEquals(0, sut.getItems().length);
+
+		Item item = new Item();
+		item.setTitle("titleTest");
+		item.setDescription("descrTest");
+		boolean success = sut.storeItem(item);
+		assertTrue(success);
+		Item[] items = sut.getItems();
+		assertEquals(1, items.length);
+		assertEquals(item.getTitle(), items[0].getTitle());
+		assertEquals(item.getDescription(), items[0].getDescription());
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		sut.deleteAll();
+		super.tearDown();
+	}
+}
