@@ -1,6 +1,4 @@
-package de.unimannheim.becker.todo;
-
-import java.util.Locale;
+package de.unimannheim.becker.todo.md;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -12,15 +10,12 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 

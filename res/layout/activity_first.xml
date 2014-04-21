@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#0099cc"
-        tools:context="de.unimannheim.becker.todo.FirstActivity" >
+        tools:context="de.unimannheim.becker.todo.md.FirstActivity" >
 
         <!--
          The primary full-screen view. This can be replaced with whatever view

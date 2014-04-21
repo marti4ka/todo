@@ -1,4 +1,4 @@
-package de.unimannheim.becker.todo;
+package de.unimannheim.becker.todo.md;
 
 import android.view.View;
 import android.widget.TextView;
