@@ -14,6 +14,10 @@ public class MyPlayCard extends RecyclableCard {
 			Boolean isClickable) {
 		super(titlePlay, description, color, titleColor, hasOverflow, isClickable);
 	}
+	
+	public MyPlayCard(String titlePlay, String description) {
+	    super(titlePlay, description, "#33b6ea", "#33b6ea", true, false);
+	}
 
 	@Override
 	protected int getCardLayoutId() {

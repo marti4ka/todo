@@ -16,11 +16,6 @@ public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity>
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-
-		// Intent mLaunchIntent = new
-		// Intent(getInstrumentation().getTargetContext(), CardsActivity.class);
-		// startActivity(mLaunchIntent, null, null);
-
 		sut = new ItemDAO(getInstrumentation().getTargetContext());
 	}
 
@@ -37,6 +32,22 @@ public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity>
 		assertEquals(item.getTitle(), items[0].getTitle());
 		assertEquals(item.getDescription(), items[0].getDescription());
 	}
+	
+	public void testArchiveItem() throws Exception {
+        Item item = new Item();
+        item.setTitle("titleTest");
+        item.setDescription("descrTest");
+        boolean success = sut.storeItem(item);
+        assertTrue(success);
+        Item[] items = sut.getItems();
+        assertEquals(1, items.length);
+        boolean res = sut.archiveItem(item);
+        assertTrue(res);
+        items = sut.getItems();
+        Item[] archived = sut.getArchived();
+        assertEquals(1, archived.length);
+        assertEquals(0, items.length);
+    }
 
 	@Override
 	protected void tearDown() throws Exception {

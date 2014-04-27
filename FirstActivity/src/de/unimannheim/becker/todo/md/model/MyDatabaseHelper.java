@@ -11,7 +11,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 2;
 
 	// Database creation sql statement
-	private static final String DATABASE_CREATE = "create table ITEMS ( _id integer primary key autoincrement, title text not null, description text, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);";
+	private static final String DATABASE_CREATE = "create table ITEMS ( _id integer primary key autoincrement, title text not null, description text, last_changed DATETIME DEFAULT CURRENT_TIMESTAMP, archived integer default 0);";
 
 	public MyDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
