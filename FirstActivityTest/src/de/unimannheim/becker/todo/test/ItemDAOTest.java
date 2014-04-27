@@ -17,6 +17,7 @@ public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity>
 	protected void setUp() throws Exception {
 		super.setUp();
 		sut = new ItemDAO(getInstrumentation().getTargetContext());
+		sut.deleteAll();
 	}
 
 	public void testStoreItem() throws Exception {

@@ -51,8 +51,9 @@ public class ItemDAO {
         String[] id = { String.valueOf(item.getId()) };
         ContentValues values = new ContentValues();
         values.put(ARCHIVED, 1);
-//        int affectedRows = database.update(EMP_TABLE, values, where, id);
         int affectedRows = database.update(EMP_TABLE, values, null, null);
+//        int affectedRows = database.update(EMP_TABLE, values, where, id);
+//        int affectedRows = database.update(EMP_TABLE, values, "_id = " + item.getId(), null);
         return affectedRows == 1;
     }
 

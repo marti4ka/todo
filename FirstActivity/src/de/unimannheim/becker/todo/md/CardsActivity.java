@@ -17,7 +17,6 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
@@ -121,16 +120,25 @@ public class CardsActivity extends Activity {
             });
         } else {
             // init CardView
-
             setContentView(R.layout.cards);
-
             mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
             mDrawerList = (ListView) findViewById(R.id.left_drawer);
             mTitle = mDrawerTitle = getTitle();
-
             mCardView = (CardUI) findViewById(R.id.cardsview);
-
             mCardView.setSwipeable(true);
+            CardStack newItemStack = new CardStack();
+            AddItemCard addItemCard = new AddItemCard();
+            addItemCard.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("http://www.androidviews.net/"));
+                    startActivity(intent);
+                }
+            });
+            mCardView.addCardToLastStack(addItemCard);
+            
             CardStack stack = new CardStack();
             // TODO how to sort
             stack.setTitle("TODAY");
@@ -157,6 +165,21 @@ public class CardsActivity extends Activity {
             // draw cards
             mCardView.refresh();
         }
+    }
+    
+    /**
+     * this method is called when the user clicks on add item
+     * 
+     * or edit?
+     */
+    private void addItem() {
+        // make field writable (text fields for title and description)
+        // draw line under the title field
+        // show save button (disabled if title field is empty)
+        // show keyboard
+        
+        // on save clicked
+        // if title and descr empty: don't add
     }
 
     @Override
