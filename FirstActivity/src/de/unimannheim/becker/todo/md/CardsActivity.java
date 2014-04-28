@@ -18,6 +18,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.fima.cardsui.objects.Card.OnCardSwiped;
+import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
 
@@ -43,14 +45,16 @@ public class CardsActivity extends Activity {
         mMenuListTitles = getResources().getStringArray(R.array.menu_array);
 
         // TODO remove this shit
-         itemDAO.deleteAll();
+        itemDAO.deleteAll();
         // Item item = new Item();
         // item.setTitle("testTitle");
         // item.setDescription("testDescr");
         // itemDAO.storeItem(item);
 
         loadActivity();
+    }
 
+    private void loadDrawer() {
         // set a custom shadow that overlays the main content when the drawer
         // opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -97,89 +101,80 @@ public class CardsActivity extends Activity {
     private void loadActivity() {
         Item[] items = itemDAO.getItems();
         if (items.length == 0) {
-            // TODO load the add item view
-
-            setContentView(R.layout.activity_first);
-
-            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-            mDrawerList = (ListView) findViewById(R.id.left_drawer);
-            mTitle = mDrawerTitle = getTitle();
-
-            View first = findViewById(R.id.fullscreen_content);
-
-            // Set up the item creator :)
-            first.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Item item = new Item();
-                    item.setTitle("testTitle");
-                    item.setDescription("testDescr");
-                    itemDAO.storeItem(item);
-                    loadActivity();
-                }
-            });
+            loadFirstView();
         } else {
-            // init CardView
-            setContentView(R.layout.cards);
-            mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-            mDrawerList = (ListView) findViewById(R.id.left_drawer);
-            mTitle = mDrawerTitle = getTitle();
-            mCardView = (CardUI) findViewById(R.id.cardsview);
-            mCardView.setSwipeable(true);
-            CardStack newItemStack = new CardStack();
-            AddItemCard addItemCard = new AddItemCard();
-            addItemCard.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse("http://www.androidviews.net/"));
-                    startActivity(intent);
-                }
-            });
-            mCardView.addCardToLastStack(addItemCard);
-            
-            CardStack stack = new CardStack();
-            // TODO how to sort
-            stack.setTitle("TODAY");
-            mCardView.addStack(stack);
-
-            // add cards to the view
-            for (Item i : items) {
-                mCardView.addCardToLastStack(new MyPlayCard(i.getTitle(), i.getDescription()));
-            }
-
-            // TODO example for set listener for update
-            MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
-            androidViewsCard.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse("http://www.androidviews.net/"));
-                    startActivity(intent);
-                }
-            });
-            mCardView.addCardToLastStack(androidViewsCard);
-
-            // draw cards
-            mCardView.refresh();
+            loadCardsView(items);
         }
+        loadDrawer();
     }
-    
-    /**
-     * this method is called when the user clicks on add item
-     * 
-     * or edit?
-     */
-    private void addItem() {
-        // make field writable (text fields for title and description)
-        // draw line under the title field
-        // show save button (disabled if title field is empty)
-        // show keyboard
-        
-        // on save clicked
-        // if title and descr empty: don't add
+
+    private void loadFirstView() {
+        setContentView(R.layout.activity_first);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mTitle = mDrawerTitle = getTitle();
+        View first = findViewById(R.id.fullscreen_content);
+
+        // Set up the item creator :)
+        first.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO load cards view
+                // add the addItemCard
+                Item item = new Item();
+                item.setTitle("testTitle");
+                item.setDescription("testDescr");
+                itemDAO.storeItem(item);
+                loadActivity();
+            }
+        });
+    }
+
+    private void loadCardsView(Item[] items) {
+        setContentView(R.layout.cards);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mTitle = mDrawerTitle = getTitle();
+        mCardView = (CardUI) findViewById(R.id.cardsview);
+        mCardView.setSwipeable(true);
+        final CardStack newItemStack = new CardStack();
+        newItemStack.setTitle("ADD");
+        mCardView.addStack(newItemStack);
+        final AddItemCard addItemCard = new AddItemCard();
+        OnCardSwiped onSwipeCardListener = new OnCardSwiped() {
+            @Override
+            public void onCardSwiped(Card card, View layout) {
+                newItemStack.add(addItemCard);
+            }
+        };
+        addItemCard.setOnCardSwipedListener(onSwipeCardListener);
+        mCardView.addCardToLastStack(addItemCard);
+
+        CardStack stack = new CardStack();
+        // TODO how to sort
+        stack.setTitle("TODOS");
+        mCardView.addStack(stack);
+
+        // add cards to the view
+        for (Item i : items) {
+            mCardView.addCardToLastStack(new MyPlayCard(i.getTitle(), i.getDescription()));
+        }
+
+        // TODO example for set listener for update
+        MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
+        androidViewsCard.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://www.androidviews.net/"));
+                startActivity(intent);
+            }
+        });
+        mCardView.addCardToLastStack(androidViewsCard);
+
+        // draw cards
+        mCardView.refresh();
     }
 
     @Override
