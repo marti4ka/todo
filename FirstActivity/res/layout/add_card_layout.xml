@@ -25,7 +25,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="text" >
-
                 <requestFocus />
             </EditText>
 
@@ -34,29 +33,26 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="textMultiLine" >                <requestFocus />
-            </EditText>
+                android:hint="@string/desc"
+                android:inputType="textMultiLine" 
+                android:imeActionLabel="@string/save">            </EditText>
         </LinearLayout>
 
+        <!-- this is the settings button -->
         <LinearLayout
             android:layout_width="0dip"
             android:layout_height="fill_parent"
             android:layout_weight="10"
             android:orientation="vertical" >
 
-            <ImageButton
-                android:id="@+id/addReminder"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/desc"
-                android:src="@drawable/reminder" />
-
-            <ImageButton
-                android:id="@+id/imageButton1"
+            <ImageView
+                android:id="@+id/overflow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@android:drawable/btn_star" />
+                android:background="@drawable/selectable_background_cardbank"
+                android:contentDescription="@string/overflow"
+                android:padding="2dip"
+                android:src="@drawable/ic_menu_moreoverflow_normal_holo_light" />
         </LinearLayout>
     </LinearLayout>
 

@@ -3,6 +3,7 @@ package de.unimannheim.becker.todo.md;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
@@ -14,12 +15,15 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.Card;
+import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
 
@@ -36,6 +40,7 @@ public class CardsActivity extends Activity {
     private CharSequence mTitle;
     private ActionBarDrawerToggle mDrawerToggle;
     private ItemDAO itemDAO;
+    private AddItemCard addItemCard;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,7 +110,6 @@ public class CardsActivity extends Activity {
         } else {
             loadCardsView(items);
         }
-        loadDrawer();
     }
 
     private void loadFirstView() {
@@ -119,36 +123,59 @@ public class CardsActivity extends Activity {
         first.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO load cards view
-                // add the addItemCard
-                Item item = new Item();
-                item.setTitle("testTitle");
-                item.setDescription("testDescr");
-                itemDAO.storeItem(item);
-                loadActivity();
+                loadCardsViewAndAddFirstCard(false);
+                loadDrawer();
             }
         });
+        loadDrawer();
     }
 
-    private void loadCardsView(Item[] items) {
-        setContentView(R.layout.cards);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mTitle = mDrawerTitle = getTitle();
-        mCardView = (CardUI) findViewById(R.id.cardsview);
-        mCardView.setSwipeable(true);
-        final CardStack newItemStack = new CardStack();
-        newItemStack.setTitle("ADD");
-        mCardView.addStack(newItemStack);
-        final AddItemCard addItemCard = new AddItemCard();
-        OnCardSwiped onSwipeCardListener = new OnCardSwiped() {
-            @Override
-            public void onCardSwiped(Card card, View layout) {
-                newItemStack.add(addItemCard);
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        // TODO
+        View v = getCurrentFocus();
+        boolean ret = super.dispatchTouchEvent(event);
+
+        if (v instanceof EditText) {
+            View w = getCurrentFocus();
+            int scrcoords[] = new int[2];
+            w.getLocationOnScreen(scrcoords);
+            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+            float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+            if (event.getAction() == MotionEvent.ACTION_UP
+                    && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w.getBottom())) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+                EditText editTitle = (EditText) findViewById(R.id.editTitle);
+                EditText editDesc = (EditText) findViewById(R.id.editDescription);
+                String title = editTitle.getText().toString();
+                String desc = editDesc.getText().toString();
+                if ((title != null && !title.equals("")) || (desc != null && !desc.equals(""))) {
+                    Item newItem = new Item();
+                    newItem.setTitle(title);
+                    newItem.setDescription(desc);
+                    itemDAO.storeItem(newItem);
+                    loadCardsView(itemDAO.getItems());
+                }
             }
-        };
-        addItemCard.setOnCardSwipedListener(onSwipeCardListener);
-        mCardView.addCardToLastStack(addItemCard);
+        }
+        return ret;
+    }
+
+    // TODO alternative
+    // http://stackoverflow.com/questions/4005728/hide-default-keyboard-on-click-in-android
+    // https://developer.android.com/training/keyboard-input/visibility.html
+    // private void hideSoftKeyboard(){
+    // if(getCurrentFocus()!=null && getCurrentFocus() instanceof EditText){
+    // InputMethodManager imm =
+    // (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+    // imm.hideSoftInputFromWindow(yourEditTextHere.getWindowToken(), 0);
+    // }
+    // }
+
+    private void loadCardsView(Item[] items) {
+        loadCardsViewAndAddFirstCard(true);
 
         CardStack stack = new CardStack();
         // TODO how to sort
@@ -161,20 +188,21 @@ public class CardsActivity extends Activity {
         }
 
         // TODO example for set listener for update
-        MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
-        androidViewsCard.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("http://www.androidviews.net/"));
-                startActivity(intent);
-            }
-        });
-        mCardView.addCardToLastStack(androidViewsCard);
+//        MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
+//        androidViewsCard.setOnClickListener(new OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.setData(Uri.parse("http://www.androidviews.net/"));
+//                startActivity(intent);
+//            }
+//        });
+//        mCardView.addCardToLastStack(androidViewsCard);
 
         // draw cards
         mCardView.refresh();
+        loadDrawer();
     }
 
     @Override
@@ -246,5 +274,31 @@ public class CardsActivity extends Activity {
     public void setTitle(CharSequence title) {
         mTitle = title;
         getActionBar().setTitle(mTitle);
+    }
+
+    private void loadCardsViewAndAddFirstCard(final boolean itemsAvailable) {
+        setContentView(R.layout.cards);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mTitle = mDrawerTitle = getTitle();
+        mCardView = (CardUI) findViewById(R.id.cardsview);
+        mCardView.setSwipeable(true);
+        final CardStack newItemStack = new CardStack();
+        newItemStack.setTitle("ADD");
+        mCardView.addStack(newItemStack);
+        addItemCard = new AddItemCard();
+        OnCardSwiped onSwipeCardListener = new OnCardSwiped() {
+            @Override
+            public void onCardSwiped(Card card, View layout) {
+                if (itemsAvailable) {
+                    newItemStack.add(addItemCard);
+                } else {
+                    loadFirstView();
+                }
+            }
+        };
+        addItemCard.setOnCardSwipedListener(onSwipeCardListener);
+        mCardView.addCardToLastStack(addItemCard);
+        mCardView.refresh();
     }
 }

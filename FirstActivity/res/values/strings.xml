@@ -15,6 +15,7 @@
     <!-- things that have to disappear from here -->
     <string name="color_stripe">Color Stripe</string>
     <string name="title">Title</string>
+    <string name="save">Save</string>
     <string name="desc">Description</string>
     <string name="overflow">Menu Overflow</string>
 </resources>
