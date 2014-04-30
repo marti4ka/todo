@@ -42,7 +42,7 @@ public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity>
         assertTrue(success);
         Item[] items = sut.getItems();
         assertEquals(1, items.length);
-        boolean res = sut.archiveItem(item);
+        boolean res = sut.archiveItem(item.getId());
         assertTrue(res);
         items = sut.getItems();
         Item[] archived = sut.getArchived();

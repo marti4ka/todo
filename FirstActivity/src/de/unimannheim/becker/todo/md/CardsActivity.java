@@ -132,7 +132,6 @@ public class CardsActivity extends Activity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        // TODO
         View v = getCurrentFocus();
         boolean ret = super.dispatchTouchEvent(event);
 
@@ -163,17 +162,6 @@ public class CardsActivity extends Activity {
         return ret;
     }
 
-    // TODO alternative
-    // http://stackoverflow.com/questions/4005728/hide-default-keyboard-on-click-in-android
-    // https://developer.android.com/training/keyboard-input/visibility.html
-    // private void hideSoftKeyboard(){
-    // if(getCurrentFocus()!=null && getCurrentFocus() instanceof EditText){
-    // InputMethodManager imm =
-    // (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-    // imm.hideSoftInputFromWindow(yourEditTextHere.getWindowToken(), 0);
-    // }
-    // }
-
     private void loadCardsView(Item[] items) {
         loadCardsViewAndAddFirstCard(true);
 
@@ -182,12 +170,26 @@ public class CardsActivity extends Activity {
         stack.setTitle("TODOS");
         mCardView.addStack(stack);
 
+        OnCardSwiped onSwipeCardListener = new OnCardSwiped() {
+            @Override
+            public void onCardSwiped(Card card, View layout) {
+                itemDAO.archiveItem(((MyPlayCard) card).getItemId());
+                boolean tmp = mCardView.removeCard(card);
+//                Toast.makeText(getApplicationContext(), String.valueOf(tmp), Toast.LENGTH_LONG).show();
+                //TODO remove card from stack
+                if (mCardView.getTotalNumberOfCards() == 1)
+                    loadFirstView();
+            }
+        };
+        
         // add cards to the view
         for (Item i : items) {
-            mCardView.addCardToLastStack(new MyPlayCard(i.getTitle(), i.getDescription()));
+            Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId());
+            card.setOnCardSwipedListener(onSwipeCardListener);
+            mCardView.addCardToLastStack(card);
         }
 
-        // TODO example for set listener for update
+        // example for set listener for update
 //        MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
 //        androidViewsCard.setOnClickListener(new OnClickListener() {
 //

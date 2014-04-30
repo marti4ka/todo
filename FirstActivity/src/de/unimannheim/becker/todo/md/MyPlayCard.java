@@ -9,14 +9,25 @@ import android.widget.TextView;
 import com.fima.cardsui.objects.RecyclableCard;
 
 public class MyPlayCard extends RecyclableCard {
+    
+    private int itemId;
 
-	public MyPlayCard(String titlePlay, String description, String color, String titleColor, Boolean hasOverflow,
+    public int getItemId() {
+        return itemId;
+    }
+    
+    public void setItemId(int itemId) {
+        this.itemId = itemId;
+    }
+
+    public MyPlayCard(String titlePlay, String description, String color, String titleColor, Boolean hasOverflow,
 			Boolean isClickable) {
 		super(titlePlay, description, color, titleColor, hasOverflow, isClickable);
 	}
 	
-	public MyPlayCard(String titlePlay, String description) {
+	public MyPlayCard(String titlePlay, String description, int id) {
 	    super(titlePlay, description, "#33b6ea", "#33b6ea", true, false);
+	    this.itemId = id;
 	}
 
 	@Override
@@ -40,4 +51,5 @@ public class MyPlayCard extends RecyclableCard {
 		else
 			((ImageView) convertView.findViewById(R.id.overflow)).setVisibility(View.GONE);
 	}
+
 }

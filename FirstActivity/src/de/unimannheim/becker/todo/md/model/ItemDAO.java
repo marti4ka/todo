@@ -46,9 +46,9 @@ public class ItemDAO {
         return getAll(1);
     }
     
-    public boolean archiveItem(Item item) {
+    public boolean archiveItem(int itemId) {
         String where = EMP_ID + " = ? ";
-        String[] id = { String.valueOf(item.getId()) };
+        String[] id = { String.valueOf(itemId) };
         ContentValues values = new ContentValues();
         values.put(ARCHIVED, 1);
         int affectedRows = database.update(EMP_TABLE, values, null, null);
