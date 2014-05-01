@@ -175,13 +175,14 @@ public class CardsActivity extends Activity {
             public void onCardSwiped(Card card, View layout) {
                 itemDAO.archiveItem(((MyPlayCard) card).getItemId());
                 boolean tmp = mCardView.removeCard(card);
-//                Toast.makeText(getApplicationContext(), String.valueOf(tmp), Toast.LENGTH_LONG).show();
-                //TODO remove card from stack
+                // Toast.makeText(getApplicationContext(), String.valueOf(tmp),
+                // Toast.LENGTH_LONG).show();
+                // TODO remove card from stack
                 if (mCardView.getTotalNumberOfCards() == 1)
                     loadFirstView();
             }
         };
-        
+
         // add cards to the view
         for (Item i : items) {
             Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId());
@@ -190,17 +191,18 @@ public class CardsActivity extends Activity {
         }
 
         // example for set listener for update
-//        MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net", "blablabla lorem impsum :D");
-//        androidViewsCard.setOnClickListener(new OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(Intent.ACTION_VIEW);
-//                intent.setData(Uri.parse("http://www.androidviews.net/"));
-//                startActivity(intent);
-//            }
-//        });
-//        mCardView.addCardToLastStack(androidViewsCard);
+        // MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net",
+        // "blablabla lorem impsum :D");
+        // androidViewsCard.setOnClickListener(new OnClickListener() {
+        //
+        // @Override
+        // public void onClick(View v) {
+        // Intent intent = new Intent(Intent.ACTION_VIEW);
+        // intent.setData(Uri.parse("http://www.androidviews.net/"));
+        // startActivity(intent);
+        // }
+        // });
+        // mCardView.addCardToLastStack(androidViewsCard);
 
         // draw cards
         mCardView.refresh();
@@ -253,18 +255,20 @@ public class CardsActivity extends Activity {
         }
     }
 
+    // TODO
     /** Swaps fragments in the main content view */
     private void selectItem(int position) {
-        // Create a new fragment and specify the planet to show based on
-        // position
-        Fragment fragment = new TheNewFragment();
-        Bundle args = new Bundle();
-        args.putInt(TheNewFragment.ARG_MENU_ITEM_NUMBER, position);
-        fragment.setArguments(args);
-
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fullscreen_content, fragment).commit();
+        switch (position) {
+        case 0:
+            loadActivity();
+            break;
+        case 1:
+            // TODO load map
+            break;
+        case 3:
+            loadArchivedView();
+            break;
+        }
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -302,5 +306,25 @@ public class CardsActivity extends Activity {
         addItemCard.setOnCardSwipedListener(onSwipeCardListener);
         mCardView.addCardToLastStack(addItemCard);
         mCardView.refresh();
+    }
+
+    private void loadArchivedView() {
+        setContentView(R.layout.cards);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mTitle = mDrawerTitle = getTitle();
+        mCardView = (CardUI) findViewById(R.id.cardsview);
+        mCardView.setSwipeable(false);
+
+        CardStack stack = new CardStack();
+        stack.setTitle("ARCHIVED");
+        mCardView.addStack(stack);
+        Item[] archivedItems = itemDAO.getArchived(); 
+        for (Item i : archivedItems) {
+            Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId());
+            mCardView.addCardToLastStack(card);
+        }
+        mCardView.refresh();
+        loadDrawer();
     }
 }
