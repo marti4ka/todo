@@ -1,7 +1,6 @@
 package de.unimannheim.becker.todo.md;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -45,55 +44,47 @@ public class CardsActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         itemDAO = new ItemDAO(getApplicationContext());
         mMenuListTitles = getResources().getStringArray(R.array.menu_array);
-
-        // TODO remove this shit
-        itemDAO.deleteAll();
-        // Item item = new Item();
-        // item.setTitle("testTitle");
-        // item.setDescription("testDescr");
-        // itemDAO.storeItem(item);
-
-        loadActivity();
+        // itemDAO.deleteAll();
+        loadHomeView();
     }
 
     private void loadDrawer() {
+        mTitle = mDrawerTitle = getTitle();
         // set a custom shadow that overlays the main content when the drawer
         // opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mMenuListTitles));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
 
         // Set the adapter for the list view
         mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mMenuListTitles));
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
+        // TODO here something bad happens button animation and onBack don't work
+        
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
         mDrawerLayout, /* DrawerLayout object */
         R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
         R.string.drawer_open, /* "open drawer" description for accessibility */
-        R.string.drawer_close /* "close drawer" description for accessibility */
+        R.string.drawer_close /*
+                               * "close drawer" description for accessibility
+                               */
         ) {
             public void onDrawerClosed(View view) {
                 getActionBar().setTitle(mTitle);
-                invalidateOptionsMenu(); // creates call to
-                                         // onPrepareOptionsMenu()
+                // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
                 getActionBar().setTitle(mDrawerTitle);
-                invalidateOptionsMenu(); // creates call to
-                                         // onPrepareOptionsMenu()
+                // creates call to onPrepareOptionsMenu()
+                invalidateOptionsMenu();
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -103,7 +94,7 @@ public class CardsActivity extends FragmentActivity {
         getActionBar().setHomeButtonEnabled(true);
     }
 
-    private void loadActivity() {
+    private void loadHomeView() {
         Item[] items = itemDAO.getItems();
         if (items.length == 0) {
             loadFirstView();
@@ -114,9 +105,6 @@ public class CardsActivity extends FragmentActivity {
 
     private void loadFirstView() {
         setContentView(R.layout.activity_first);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mTitle = mDrawerTitle = getTitle();
         View first = findViewById(R.id.fullscreen_content);
 
         // Set up the item creator :)
@@ -124,9 +112,13 @@ public class CardsActivity extends FragmentActivity {
             @Override
             public void onClick(View view) {
                 loadCardsViewAndAddFirstCard(false);
+                mDrawerList = (ListView) findViewById(R.id.left_drawer_cards);
+                mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_cards);
                 loadDrawer();
             }
         });
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_first);
         loadDrawer();
     }
 
@@ -206,6 +198,8 @@ public class CardsActivity extends FragmentActivity {
 
         // draw cards
         mCardView.refresh();
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_cards);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_cards);
         loadDrawer();
     }
 
@@ -260,12 +254,10 @@ public class CardsActivity extends FragmentActivity {
     private void selectItem(int position) {
         switch (position) {
         case 0:
-            loadActivity();
+            loadHomeView();
             break;
         case 1:
-            setContentView(R.layout.map_layout);
-            loadDrawer();
-            setUpMapIfNeeded();
+            loadMapView();
             break;
         case 3:
             loadArchivedView();
@@ -278,25 +270,21 @@ public class CardsActivity extends FragmentActivity {
         mDrawerLayout.closeDrawer(mDrawerList);
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        setUpMapIfNeeded();
-//    }
-    
-    private void setUpMapIfNeeded() {
-        // Do a null check to confirm that we have not already instantiated the map.
+    private void loadMapView() {
+        setContentView(R.layout.map_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_map);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_map);
+        loadDrawer();
+        // null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
-            // Check if we were successful in obtaining the map.
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
             if (mMap != null) {
                 setUpMap();
             }
         }
     }
-    
+
+    // TODO here load tasks with locations
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
@@ -309,9 +297,6 @@ public class CardsActivity extends FragmentActivity {
 
     private void loadCardsViewAndAddFirstCard(final boolean itemsAvailable) {
         setContentView(R.layout.cards);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mTitle = mDrawerTitle = getTitle();
         mCardView = (CardUI) findViewById(R.id.cardsview);
         mCardView.setSwipeable(true);
         final CardStack newItemStack = new CardStack();
@@ -335,9 +320,6 @@ public class CardsActivity extends FragmentActivity {
 
     private void loadArchivedView() {
         setContentView(R.layout.cards);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mTitle = mDrawerTitle = getTitle();
         mCardView = (CardUI) findViewById(R.id.cardsview);
         mCardView.setSwipeable(false);
 
@@ -350,6 +332,8 @@ public class CardsActivity extends FragmentActivity {
             mCardView.addCardToLastStack(card);
         }
         mCardView.refresh();
+        mDrawerList = (ListView) findViewById(R.id.left_drawer_cards);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_cards);
         loadDrawer();
     }
 }
