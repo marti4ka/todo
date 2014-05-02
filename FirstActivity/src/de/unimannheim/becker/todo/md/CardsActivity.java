@@ -39,14 +39,14 @@ public class CardsActivity extends FragmentActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private ItemDAO itemDAO;
     private AddItemCard addItemCard;
-    private GoogleMap mMap;
+    private MyMap myMap;
+//    private GoogleMap mMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         itemDAO = new ItemDAO(getApplicationContext());
         mMenuListTitles = getResources().getStringArray(R.array.menu_array);
-        // itemDAO.deleteAll();
         loadHomeView();
     }
 
@@ -276,9 +276,10 @@ public class CardsActivity extends FragmentActivity {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_map);
         loadDrawer();
         // null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-            if (mMap != null) {
+        if (myMap == null) {
+            myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap());
+            if (myMap.getMap() != null) {
                 setUpMap();
             }
         }
@@ -286,7 +287,8 @@ public class CardsActivity extends FragmentActivity {
 
     // TODO here load tasks with locations
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        // load my location
+        myMap.getMap().addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
     @Override
