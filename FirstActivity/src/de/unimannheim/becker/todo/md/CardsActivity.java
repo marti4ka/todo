@@ -1,11 +1,11 @@
 package de.unimannheim.becker.todo.md;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.MenuItem;
@@ -21,11 +21,15 @@ import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import de.unimannheim.becker.todo.md.model.Item;
 import de.unimannheim.becker.todo.md.model.ItemDAO;
 
-public class CardsActivity extends Activity {
+public class CardsActivity extends FragmentActivity {
 
     private CardUI mCardView;
     private String[] mMenuListTitles;
@@ -36,6 +40,7 @@ public class CardsActivity extends Activity {
     private ActionBarDrawerToggle mDrawerToggle;
     private ItemDAO itemDAO;
     private AddItemCard addItemCard;
+    private GoogleMap mMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -258,8 +263,9 @@ public class CardsActivity extends Activity {
             loadActivity();
             break;
         case 1:
-            // TODO load map
-            startActivity(new Intent(this, BasicMapDemoActivity.class));
+            setContentView(R.layout.map_layout);
+            loadDrawer();
+            setUpMapIfNeeded();
             break;
         case 3:
             loadArchivedView();
@@ -270,6 +276,29 @@ public class CardsActivity extends Activity {
         mDrawerList.setItemChecked(position, true);
         setTitle(mMenuListTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        setUpMapIfNeeded();
+//    }
+    
+    private void setUpMapIfNeeded() {
+        // Do a null check to confirm that we have not already instantiated the map.
+        if (mMap == null) {
+            // Try to obtain the map from the SupportMapFragment.
+            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .getMap();
+            // Check if we were successful in obtaining the map.
+            if (mMap != null) {
+                setUpMap();
+            }
+        }
+    }
+    
+    private void setUpMap() {
+        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
     @Override
@@ -315,7 +344,7 @@ public class CardsActivity extends Activity {
         CardStack stack = new CardStack();
         stack.setTitle("ARCHIVED");
         mCardView.addStack(stack);
-        Item[] archivedItems = itemDAO.getArchived(); 
+        Item[] archivedItems = itemDAO.getArchived();
         for (Item i : archivedItems) {
             Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId());
             mCardView.addCardToLastStack(card);

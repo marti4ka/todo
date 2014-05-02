@@ -42,9 +42,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="de.unimannheim.becker.todo.md.BasicMapDemoActivity"
-            android:label="Basic Map" />
     </application>
 
 </manifest>
