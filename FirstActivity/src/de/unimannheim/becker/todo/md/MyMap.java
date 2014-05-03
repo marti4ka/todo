@@ -11,8 +11,10 @@ import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailed
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.model.LatLng;
 
 public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,
         OnMyLocationButtonClickListener {
@@ -20,8 +22,12 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
     private GoogleMap mMap;
     private LocationClient mLocationClient;
     
-    public MyMap(GoogleMap mMap) {
+    public MyMap(GoogleMap mMap, Context context) {
         this.mMap = mMap;
+        this.mLocationClient = new LocationClient(context, this, this);
+        mLocationClient.connect();
+        this.mMap.setMyLocationEnabled(true);
+        this.mMap.setOnMyLocationButtonClickListener(this);
     }
     
     public GoogleMap getMap() {
@@ -38,7 +44,6 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
             .setInterval(5000)         // 5 seconds
             .setFastestInterval(16)    // 16ms = 60fps
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    
     
     /**
      * Button to get current Location. This demonstrates how to get the current Location as required
@@ -65,9 +70,13 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 
     @Override
     public void onConnected(Bundle connectionHint) {
+     // LocationListener
         mLocationClient.requestLocationUpdates(
                 REQUEST,
-                this);  // LocationListener
+                this);  
+        Location lastLocation = mLocationClient.getLastLocation();
+        LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()); 
+        this.mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
     }
 
     @Override

@@ -20,13 +20,14 @@ import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import de.unimannheim.becker.todo.md.model.Item;
 import de.unimannheim.becker.todo.md.model.ItemDAO;
+import de.unimannheim.becker.todo.md.model.Reminder;
+import de.unimannheim.becker.todo.md.model.ReminderDAO;
 
 public class CardsActivity extends FragmentActivity {
 
@@ -38,14 +39,15 @@ public class CardsActivity extends FragmentActivity {
     private CharSequence mTitle;
     private ActionBarDrawerToggle mDrawerToggle;
     private ItemDAO itemDAO;
+    private ReminderDAO reminderDAO;
     private AddItemCard addItemCard;
     private MyMap myMap;
-//    private GoogleMap mMap;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         itemDAO = new ItemDAO(getApplicationContext());
+        reminderDAO = new ReminderDAO(getApplicationContext());
         mMenuListTitles = getResources().getStringArray(R.array.menu_array);
         loadHomeView();
     }
@@ -63,8 +65,9 @@ public class CardsActivity extends FragmentActivity {
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        // TODO here something bad happens button animation and onBack don't work
-        
+        // TODO here something bad happens button animation and onBack don't
+        // work
+
         // ActionBarDrawerToggle ties together the the proper interactions
         // between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
@@ -166,10 +169,7 @@ public class CardsActivity extends FragmentActivity {
             @Override
             public void onCardSwiped(Card card, View layout) {
                 itemDAO.archiveItem(((MyPlayCard) card).getItemId());
-                boolean tmp = mCardView.removeCard(card);
-                // Toast.makeText(getApplicationContext(), String.valueOf(tmp),
-                // Toast.LENGTH_LONG).show();
-                // TODO remove card from stack
+                mCardView.removeCard(card);
                 if (mCardView.getTotalNumberOfCards() == 1)
                     loadFirstView();
             }
@@ -277,18 +277,21 @@ public class CardsActivity extends FragmentActivity {
         loadDrawer();
         // null check to confirm that we have not already instantiated the map.
         if (myMap == null) {
-            myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap());
+            myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap(),
+                    getApplicationContext());
             if (myMap.getMap() != null) {
-                setUpMap();
+                addLocationsToMap();
             }
         }
     }
 
-    // TODO here load tasks with locations
-    private void setUpMap() {
-        // load my location
-        myMap.getMap().addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+    private void addLocationsToMap() {
+        Reminder[] activeReminders = reminderDAO.getActive();
+        for (Reminder r : activeReminders) {
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(r.getLatitude(), r.getLongtitude())).title(
+                    String.valueOf(itemDAO.getItemTitle(r.getItemId())));
+            myMap.getMap().addMarker(marker);
+        }
     }
 
     @Override

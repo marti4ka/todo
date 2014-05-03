@@ -1,9 +1,7 @@
 package de.unimannheim.becker.todo.md.model;
 
-import java.util.ArrayList;
 
 public class Item {
-	private ArrayList<Reminder> reminders;
 	private int id;
 	private String title;
 	private String description;
@@ -21,14 +19,6 @@ public class Item {
 		this.description = description;
 		this.archived = archived;
 		this.timestamp = timestamp;
-	}
-
-	public ArrayList<Reminder> getReminders() {
-		return reminders;
-	}
-
-	public void setReminders(ArrayList<Reminder> reminders) {
-		this.reminders = reminders;
 	}
 
 	public int getId() {

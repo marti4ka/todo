@@ -10,14 +10,11 @@ public class ItemDAO {
     private static final String TITLE = "title";
     private static final String ARCHIVED = "archived";
     private static final String TIMESTAMP = "last_changed";
-    
+    private static final String EMP_ID = "_id"; 
+    private static final String EMP_TABLE = "ITEMS"; 
+
     private MyDatabaseHelper dbHelper;
-
     private SQLiteDatabase database;
-
-    public final static String EMP_TABLE = "ITEMS"; // name of table
-
-    public final static String EMP_ID = "_id"; // id value for employee
 
     public ItemDAO(Context context) {
         dbHelper = new MyDatabaseHelper(context);
@@ -41,23 +38,26 @@ public class ItemDAO {
     public Item[] getItems() {
         return getAll(0);
     }
-    
+
     public Item[] getArchived() {
         return getAll(1);
     }
-    
+
     public boolean archiveItem(int itemId) {
-        String where = EMP_ID + " = ? ";
-        String[] id = { String.valueOf(itemId) };
         ContentValues values = new ContentValues();
         values.put(ARCHIVED, 1);
-//        int affectedRows = database.update(EMP_TABLE, values, null, null);
-//        int affectedRows = database.update(EMP_TABLE, values, where, id);
         int affectedRows = database.update(EMP_TABLE, values, "_id = " + itemId, null);
         return affectedRows == 1;
     }
+    
+    public String getItemTitle(int itemId) {
+        String[] cols = new String[] { TITLE };
+        String selection = "_id = " + itemId;
+        Cursor mCursor = database.query(true, EMP_TABLE, cols, selection, null, null, null, TIMESTAMP, null);
+        return mCursor.getString(mCursor.getColumnIndex(TITLE));
+    }
 
-    private Item[] getAll (int archived) {
+    private Item[] getAll(int archived) {
         String[] cols = new String[] { EMP_ID, DESCRIPTION, TITLE, TIMESTAMP };
         String selection = "archived = " + archived;
         Cursor mCursor = database.query(true, EMP_TABLE, cols, selection, null, null, null, TIMESTAMP, null);
@@ -77,7 +77,6 @@ public class ItemDAO {
         }
     }
 
-
     private Item parseItem(Cursor mCursor) {
         Item item = new Item();
         item.setDescription(mCursor.getString(mCursor.getColumnIndex(DESCRIPTION)));
@@ -86,7 +85,7 @@ public class ItemDAO {
         item.setId(mCursor.getInt(mCursor.getColumnIndex(EMP_ID)));
         return item;
     }
-    
+
     // public boolean unarchive(Item item) {
     // return false;
     // }
