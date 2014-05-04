@@ -2,21 +2,30 @@ package de.unimannheim.becker.todo.md;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fima.cardsui.objects.Card;
+import com.fima.cardsui.objects.RecyclableCard;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
@@ -80,13 +89,11 @@ public class CardsActivity extends FragmentActivity {
         ) {
             public void onDrawerClosed(View view) {
                 getActionBar().setTitle(mTitle);
-                // creates call to onPrepareOptionsMenu()
                 invalidateOptionsMenu();
             }
 
             public void onDrawerOpened(View drawerView) {
                 getActionBar().setTitle(mDrawerTitle);
-                // creates call to onPrepareOptionsMenu()
                 invalidateOptionsMenu();
             }
         };
@@ -125,6 +132,7 @@ public class CardsActivity extends FragmentActivity {
         loadDrawer();
     }
 
+    // TODO fix keyboard bug
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         View v = getCurrentFocus();
@@ -161,7 +169,6 @@ public class CardsActivity extends FragmentActivity {
         loadCardsViewAndAddFirstCard(true);
 
         CardStack stack = new CardStack();
-        // TODO how to sort
         stack.setTitle("TODOS");
         mCardView.addStack(stack);
 
@@ -176,26 +183,12 @@ public class CardsActivity extends FragmentActivity {
         };
 
         // add cards to the view
+        // TODO how to sort
         for (Item i : items) {
             Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId());
             card.setOnCardSwipedListener(onSwipeCardListener);
             mCardView.addCardToLastStack(card);
         }
-
-        // example for set listener for update
-        // MyPlayCard androidViewsCard = new MyPlayCard("www.androidviews.net",
-        // "blablabla lorem impsum :D");
-        // androidViewsCard.setOnClickListener(new OnClickListener() {
-        //
-        // @Override
-        // public void onClick(View v) {
-        // Intent intent = new Intent(Intent.ACTION_VIEW);
-        // intent.setData(Uri.parse("http://www.androidviews.net/"));
-        // startActivity(intent);
-        // }
-        // });
-        // mCardView.addCardToLastStack(androidViewsCard);
-
         // draw cards
         mCardView.refresh();
         mDrawerList = (ListView) findViewById(R.id.left_drawer_cards);
@@ -249,7 +242,14 @@ public class CardsActivity extends FragmentActivity {
         }
     }
 
-    // TODO
+    @Override
+    public void onPause() {
+        if (myMap != null) {
+            myMap.getLocationClient().disconnect();
+            super.onPause();
+        }
+    }
+
     /** Swaps fragments in the main content view */
     private void selectItem(int position) {
         switch (position) {
@@ -290,6 +290,7 @@ public class CardsActivity extends FragmentActivity {
         for (Reminder r : activeReminders) {
             MarkerOptions marker = new MarkerOptions().position(new LatLng(r.getLatitude(), r.getLongtitude())).title(
                     String.valueOf(itemDAO.getItemTitle(r.getItemId())));
+            // TODO change color of marker to blue
             myMap.getMap().addMarker(marker);
         }
     }
@@ -340,5 +341,68 @@ public class CardsActivity extends FragmentActivity {
         mDrawerList = (ListView) findViewById(R.id.left_drawer_cards);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_cards);
         loadDrawer();
+    }
+
+    private class MyPlayCard extends RecyclableCard {
+
+        private int itemId;
+
+        public int getItemId() {
+            return itemId;
+        }
+
+        public MyPlayCard(String titlePlay, String description, int id) {
+            super(titlePlay, description, "#33b6ea", "#33b6ea", true, false);
+            this.itemId = id;
+        }
+
+        @Override
+        protected int getCardLayoutId() {
+            return R.layout.card_play;
+        }
+
+        @Override
+        protected void applyTo(View convertView) {
+            ((TextView) convertView.findViewById(R.id.title)).setText(titlePlay);
+            ((TextView) convertView.findViewById(R.id.title)).setTextColor(Color.parseColor(titleColor));
+            ((TextView) convertView.findViewById(R.id.description)).setText(description);
+            ((ImageView) convertView.findViewById(R.id.stripe)).setBackgroundColor(Color.parseColor(color));
+
+            if (isClickable == true)
+                ((LinearLayout) convertView.findViewById(R.id.contentLayout))
+                        .setBackgroundResource(R.drawable.selectable_background_cardbank);
+
+            if (hasOverflow == true) {
+                ImageView overflow = (ImageView) convertView.findViewById(R.id.overflow);
+                overflow.setVisibility(View.VISIBLE);
+                overflow.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu popup = new PopupMenu(v.getContext(), v);
+                        MenuInflater inflater = popup.getMenuInflater();
+                        inflater.inflate(R.menu.actions, popup.getMenu());
+                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                switch (item.getItemId()) {
+                                case R.id.menu_add_location:
+                                    loadMapView();
+                                    myMap.startAddingLocation(itemId, reminderDAO);
+                                    return true;
+                                case R.id.menu_edit:
+                                    return false;
+                                default:
+                                    return false;
+                                }
+                            }
+                        });
+                        popup.show();
+                    }
+                });
+            } else
+                ((ImageView) convertView.findViewById(R.id.overflow)).setVisibility(View.GONE);
+        }
+
     }
 }

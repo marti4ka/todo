@@ -11,6 +11,8 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="app_name">\@todo</string>
     <string name="add_task">Add task</string>
+    <string name="add_reminder">Add location</string>
+    <string name="edit">Edit</string>
 
     <!-- things that have to disappear from here -->
     <string name="color_stripe">Color Stripe</string>
