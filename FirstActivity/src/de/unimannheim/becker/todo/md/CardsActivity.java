@@ -234,12 +234,12 @@ public class CardsActivity extends FragmentActivity {
 	}
 
 	@Override
-	public void onPause() {
-		if (myMap != null && myMap.getLocationClient() != null) {
-			myMap.getLocationClient().disconnect();
-			super.onPause();
-		}
-	}
+    public void onPause() {
+        if (myMap != null && myMap.getLocationClient() != null && myMap.getLocationClient().isConnected()) {
+            myMap.getLocationClient().disconnect();
+        }
+        super.onPause();
+    }
 
 	/** Swaps fragments in the main content view */
 	private void selectItem(int position) {

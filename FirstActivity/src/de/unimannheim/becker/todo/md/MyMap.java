@@ -14,28 +14,33 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import de.unimannheim.becker.todo.md.model.Reminder;
 import de.unimannheim.becker.todo.md.model.ReminderDAO;
 
 public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,
-        OnMyLocationButtonClickListener, OnMapLongClickListener {
+        OnMyLocationButtonClickListener, OnMapLongClickListener, OnMarkerClickListener {
 
     private GoogleMap mMap;
     private LocationClient mLocationClient;
     private boolean addingLocation = false;
     private int itemId = 0;
     private ReminderDAO reminderDao;
+    OnMapLongClickListener listener;
 
     public MyMap(GoogleMap mMap, Context context) {
         this.mMap = mMap;
-        this.mLocationClient = new LocationClient(context, this, this);
-        mLocationClient.connect();
-        this.mMap.setMyLocationEnabled(true);
-        this.mMap.setOnMyLocationButtonClickListener(this);
+        if (mLocationClient == null) {
+            this.mLocationClient = new LocationClient(context, this, this);
+            this.mLocationClient.connect();
+            this.mMap.setMyLocationEnabled(true);
+            this.mMap.setOnMyLocationButtonClickListener(this);
+            this.mMap.setOnMapLongClickListener(this);
+        }
     }
 
     public GoogleMap getMap() {
@@ -117,6 +122,12 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 //            reminder.setLongtitude(point.longitude);
 //            reminderDao.storeReminder(reminder);
         addingLocation = false;
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+//        marker.
+        return false;
     }
 
 }
