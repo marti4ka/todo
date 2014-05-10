@@ -2,7 +2,7 @@ package de.unimannheim.becker.todo.md.model;
 
 
 public class Item {
-	private int id;
+	private long id;
 	private String title;
 	private String description;
 	private boolean archived;
@@ -12,20 +12,17 @@ public class Item {
 		super();
 	}
 
-	public Item(int id, String title, String description, boolean archived, long timestamp) {
+	public Item(String title, String description) {
 		super();
-		this.id = id;
 		this.title = title;
 		this.description = description;
-		this.archived = archived;
-		this.timestamp = timestamp;
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 

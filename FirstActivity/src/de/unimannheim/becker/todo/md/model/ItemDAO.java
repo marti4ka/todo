@@ -10,7 +10,7 @@ public class ItemDAO {
     private static final String TITLE = "title";
     private static final String ARCHIVED = "archived";
     private static final String TIMESTAMP = "last_changed";
-    private static final String EMP_ID = "_id"; 
+    private static final String ID = "_id"; 
     private static final String EMP_TABLE = "ITEMS"; 
 
     private MyDatabaseHelper dbHelper;
@@ -29,7 +29,9 @@ public class ItemDAO {
         ContentValues values = new ContentValues();
         values.put(TITLE, item.getTitle());
         values.put(DESCRIPTION, item.getDescription());
-        return database.insert(EMP_TABLE, null, values) != -1;
+        long itemId = database.insert(EMP_TABLE, null, values);
+        item.setId(itemId);
+        return itemId != -1;
     }
 
     /**
@@ -43,22 +45,15 @@ public class ItemDAO {
         return getAll(1);
     }
 
-    public boolean archiveItem(int itemId) {
+    public boolean archiveItem(long itemId) {
         ContentValues values = new ContentValues();
         values.put(ARCHIVED, 1);
         int affectedRows = database.update(EMP_TABLE, values, "_id = " + itemId, null);
         return affectedRows == 1;
     }
     
-    public String getItemTitle(int itemId) {
-        String[] cols = new String[] { TITLE };
-        String selection = "_id = " + itemId;
-        Cursor mCursor = database.query(true, EMP_TABLE, cols, selection, null, null, null, TIMESTAMP, null);
-        return mCursor.getString(mCursor.getColumnIndex(TITLE));
-    }
-
     private Item[] getAll(int archived) {
-        String[] cols = new String[] { EMP_ID, DESCRIPTION, TITLE, TIMESTAMP };
+        String[] cols = new String[] { ID, DESCRIPTION, TITLE, TIMESTAMP };
         String selection = "archived = " + archived;
         Cursor mCursor = database.query(true, EMP_TABLE, cols, selection, null, null, null, TIMESTAMP, null);
         if (mCursor.moveToFirst()) {
@@ -82,11 +77,7 @@ public class ItemDAO {
         item.setDescription(mCursor.getString(mCursor.getColumnIndex(DESCRIPTION)));
         item.setTitle(mCursor.getString(mCursor.getColumnIndex(TITLE)));
         item.setTimestamp(mCursor.getLong(mCursor.getColumnIndex(TIMESTAMP)));
-        item.setId(mCursor.getInt(mCursor.getColumnIndex(EMP_ID)));
+        item.setId(mCursor.getInt(mCursor.getColumnIndex(ID)));
         return item;
     }
-
-    // public boolean unarchive(Item item) {
-    // return false;
-    // }
 }

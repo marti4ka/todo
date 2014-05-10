@@ -21,13 +21,10 @@ import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import de.unimannheim.becker.todo.md.model.Item;
 import de.unimannheim.becker.todo.md.model.ItemDAO;
-import de.unimannheim.becker.todo.md.model.Reminder;
-import de.unimannheim.becker.todo.md.model.ReminderDAO;
+import de.unimannheim.becker.todo.md.model.LocationDAO;
 
 public class CardsActivity extends FragmentActivity {
 
@@ -39,7 +36,7 @@ public class CardsActivity extends FragmentActivity {
 	private CharSequence mTitle;
 	private ActionBarDrawerToggle mDrawerToggle;
 	private ItemDAO itemDAO;
-	ReminderDAO reminderDAO;
+	LocationDAO locationDAO;
 	private AddItemCard addItemCard;
 	MyMap myMap;
 
@@ -47,7 +44,7 @@ public class CardsActivity extends FragmentActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		itemDAO = new ItemDAO(getApplicationContext());
-		reminderDAO = new ReminderDAO(getApplicationContext());
+		locationDAO = new LocationDAO(getApplicationContext());
 		mMenuListTitles = getResources().getStringArray(R.array.menu_array);
 		loadHomeView();
 	}
@@ -271,18 +268,8 @@ public class CardsActivity extends FragmentActivity {
 			myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap(),
 					getApplicationContext());
 			if (myMap.getMap() != null) {
-				addLocationsToMap();
+			    myMap.addLocationsToMap(locationDAO);
 			}
-		}
-	}
-
-	private void addLocationsToMap() {
-		Reminder[] activeReminders = reminderDAO.getActive();
-		for (Reminder r : activeReminders) {
-			MarkerOptions marker = new MarkerOptions().position(new LatLng(r.getLatitude(), r.getLongtitude())).title(
-					String.valueOf(itemDAO.getItemTitle(r.getItemId())));
-			// TODO change color of marker to blue
-			myMap.getMap().addMarker(marker);
 		}
 	}
 

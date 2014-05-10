@@ -13,14 +13,14 @@ import com.fima.cardsui.objects.RecyclableCard;
 
 class MyPlayCard extends RecyclableCard {
 
-	private int itemId;
+	private long itemId;
 	private CardsActivity cardsActivity;
 
-	public int getItemId() {
+	public long getItemId() {
 		return itemId;
 	}
 
-	public MyPlayCard(String titlePlay, String description, int id, CardsActivity activity) {
+	public MyPlayCard(String titlePlay, String description, long id, CardsActivity activity) {
 		super(titlePlay, description, "#33b6ea", "#33b6ea", true, false);
 		this.itemId = id;
 		this.cardsActivity = activity;
@@ -62,7 +62,7 @@ class MyPlayCard extends RecyclableCard {
 							switch (item.getItemId()) {
 							case R.id.menu_add_location:
 								cardsActivity.loadMapView();
-								cardsActivity.myMap.startAddingLocation(itemId, cardsActivity.reminderDAO);
+								cardsActivity.myMap.startAddingLocation(itemId, cardsActivity.locationDAO);
 								return true;
 							case R.id.menu_edit:
 								return false;

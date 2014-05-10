@@ -16,11 +16,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import de.unimannheim.becker.todo.md.model.ReminderDAO;
+import de.unimannheim.becker.todo.md.model.LocationDAO;
 
 public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,
         OnMyLocationButtonClickListener, OnMapLongClickListener, OnMarkerClickListener {
@@ -28,8 +29,9 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
     private GoogleMap mMap;
     private LocationClient mLocationClient;
     private boolean addingLocation = false;
-    private int itemId = 0;
-    private ReminderDAO reminderDao;
+    private long itemId = 0;
+    private long locationId = 0;
+    private LocationDAO locationDao;
     OnMapLongClickListener listener;
 
     public MyMap(GoogleMap mMap, Context context) {
@@ -40,6 +42,7 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
             this.mMap.setMyLocationEnabled(true);
             this.mMap.setOnMyLocationButtonClickListener(this);
             this.mMap.setOnMapLongClickListener(this);
+            this.mMap.setOnMarkerClickListener(this);
         }
     }
 
@@ -51,9 +54,6 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
         this.mMap = map;
     }
 
-    // These settings are the same as the settings for the map. They will in
-    // fact give you updates
-    // at the maximal rates currently possible.
     private static final LocationRequest REQUEST = LocationRequest.create().setInterval(5000) // 5
                                                                                               // seconds
             .setFastestInterval(16) // 16ms = 60fps
@@ -79,9 +79,9 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
     }
 
     public LocationClient getLocationClient() {
-            return mLocationClient;
+        return mLocationClient;
     }
-    
+
     @Override
     public void onLocationChanged(Location location) {
         // Do nothing
@@ -105,28 +105,43 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
     public void onConnectionFailed(ConnectionResult result) {
         // Do nothing
     }
-    
-    public void startAddingLocation(int itemId, ReminderDAO reminderDao) {
+
+    public void startAddingLocation(long itemId, LocationDAO reminderDao) {
         addingLocation = true;
         this.itemId = itemId;
-        this.reminderDao = reminderDao;
+        this.locationDao = reminderDao;
+        addLocationsToMap(locationDao);
+    }
+    
+    public void addLocationsToMap(LocationDAO reminderDao) {
+//        de.unimannheim.becker.todo.md.model.Location[] locations = locationDao.getAll();
+//        for (de.unimannheim.becker.todo.md.model.Location l : locations) {
+//            
+//            MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude()));
+//            // TODO change color of marker to blue
+//            mMap.addMarker(marker);
+//        }
     }
 
     @Override
     public void onMapLongClick(LatLng point) {
-            MarkerOptions marker = new MarkerOptions().position(point).title("Added");
-            mMap.addMarker(marker);
-//            Reminder reminder = new Reminder();
-//            reminder.setItemId(itemId);
-//            reminder.setLatitude(point.latitude);
-//            reminder.setLongtitude(point.longitude);
-//            reminderDao.storeReminder(reminder);
-        addingLocation = false;
+        // TODO if (addingLocation) {
+        MarkerOptions marker = new MarkerOptions().position(point).icon(
+                BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        de.unimannheim.becker.todo.md.model.Location location = new de.unimannheim.becker.todo.md.model.Location(
+                point.latitude, point.longitude);
+        locationId = location.getId();
+        locationDao.storeLocation(location);
+
+        mMap.addMarker(marker);
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-//        marker.
+        if (locationId != 0) {
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            locationDao.mapLocationToItem(locationId, itemId);
+        }
         return false;
     }
 

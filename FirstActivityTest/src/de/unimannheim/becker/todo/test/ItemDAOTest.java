@@ -26,12 +26,17 @@ public class ItemDAOTest extends ActivityInstrumentationTestCase2<CardsActivity>
 		Item item = new Item();
 		item.setTitle("titleTest");
 		item.setDescription("descrTest");
-		boolean success = sut.storeItem(item);
-		assertTrue(success);
+		long id = item.getId();
+		assertTrue(sut.storeItem(item));
+		long id2 = item.getId();
+		assertTrue(id != id2);
 		Item[] items = sut.getItems();
 		assertEquals(1, items.length);
 		assertEquals(item.getTitle(), items[0].getTitle());
 		assertEquals(item.getDescription(), items[0].getDescription());
+		sut.storeItem(item);
+		assertTrue(id2 != item.getId());
+		assertTrue(id != item.getId());
 	}
 	
 	public void testArchiveItem() throws Exception {
