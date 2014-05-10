@@ -245,7 +245,7 @@ public class CardsActivity extends FragmentActivity {
 			loadHomeView();
 			break;
 		case 1:
-			loadMapView();
+			loadMapView(MyMap.NO_ITEM);
 			break;
 		case 3:
 			loadArchivedView();
@@ -258,7 +258,7 @@ public class CardsActivity extends FragmentActivity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
-	void loadMapView() {
+	void loadMapView(long itemId) {
 		setContentView(R.layout.map_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer_map);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_map);
@@ -266,10 +266,11 @@ public class CardsActivity extends FragmentActivity {
 		// null check to confirm that we have not already instantiated the map.
 		if (myMap == null) {
 			myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap(),
-					getApplicationContext());
-			if (myMap.getMap() != null) {
-			    myMap.addLocationsToMap(locationDAO);
-			}
+					getApplicationContext(), locationDAO);
+		}
+		myMap.setItemId(itemId);
+		if (myMap.getMap() != null) {
+		    myMap.addLocationsToMap();
 		}
 	}
 

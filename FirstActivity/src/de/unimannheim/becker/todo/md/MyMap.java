@@ -1,5 +1,8 @@
 package de.unimannheim.becker.todo.md;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,16 +29,17 @@ import de.unimannheim.becker.todo.md.model.LocationDAO;
 public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,
         OnMyLocationButtonClickListener, OnMapLongClickListener, OnMarkerClickListener {
 
+    public static final int NO_ITEM = 0;
     private GoogleMap mMap;
     private LocationClient mLocationClient;
-    private boolean addingLocation = false;
     private long itemId = 0;
     private long locationId = 0;
-    private LocationDAO locationDao;
+    private final LocationDAO locationDao;
     OnMapLongClickListener listener;
 
-    public MyMap(GoogleMap mMap, Context context) {
+    public MyMap(GoogleMap mMap, Context context, LocationDAO locationDAO) {
         this.mMap = mMap;
+        this.locationDao = locationDAO;
         if (mLocationClient == null) {
             this.mLocationClient = new LocationClient(context, this, this);
             this.mLocationClient.connect();
@@ -106,21 +110,33 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
         // Do nothing
     }
 
-    public void startAddingLocation(long itemId, LocationDAO reminderDao) {
-        addingLocation = true;
+    public void setItemId(long itemId) {
         this.itemId = itemId;
-        this.locationDao = reminderDao;
-        addLocationsToMap(locationDao);
+        // addLocationsToMap();
     }
-    
-    public void addLocationsToMap(LocationDAO reminderDao) {
-//        de.unimannheim.becker.todo.md.model.Location[] locations = locationDao.getAll();
-//        for (de.unimannheim.becker.todo.md.model.Location l : locations) {
-//            
-//            MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude()));
-//            // TODO change color of marker to blue
-//            mMap.addMarker(marker);
-//        }
+
+    public void addLocationsToMap() {
+        mMap.clear();
+
+        ArrayList<de.unimannheim.becker.todo.md.model.Location> all = new ArrayList<de.unimannheim.becker.todo.md.model.Location>();
+        ArrayList<de.unimannheim.becker.todo.md.model.Location> forItem = new ArrayList<de.unimannheim.becker.todo.md.model.Location>();
+        all.addAll(Arrays.asList(locationDao.getAll()));
+        if (itemId != NO_ITEM) {
+            forItem.addAll(Arrays.asList(locationDao.getLocationsForItem(itemId)));
+            all.removeAll(forItem);
+        }
+
+        for (de.unimannheim.becker.todo.md.model.Location l : all) {
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude()));
+            // TODO change color of marker to blue
+            mMap.addMarker(marker);
+        }
+        for (de.unimannheim.becker.todo.md.model.Location l : forItem) {
+            MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude())).icon(
+                    BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            // TODO change color of marker to blue
+            mMap.addMarker(marker);
+        }
     }
 
     @Override
@@ -130,19 +146,19 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
                 BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         de.unimannheim.becker.todo.md.model.Location location = new de.unimannheim.becker.todo.md.model.Location(
                 point.latitude, point.longitude);
-        locationId = location.getId();
         locationDao.storeLocation(location);
+        locationId = location.getId();
 
         mMap.addMarker(marker);
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if (locationId != 0) {
+        if (itemId != NO_ITEM) {
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
             locationDao.mapLocationToItem(locationId, itemId);
         }
-        return false;
+        return true;
     }
 
 }
