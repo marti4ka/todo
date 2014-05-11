@@ -2,6 +2,7 @@ package de.unimannheim.becker.todo.md;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
@@ -20,6 +21,7 @@ import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
 import com.fima.cardsui.objects.CardStack;
 import com.fima.cardsui.views.CardUI;
+import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.SupportMapFragment;
 
 import de.unimannheim.becker.todo.md.model.Item;
@@ -170,8 +172,12 @@ public class CardsActivity extends FragmentActivity {
 			}
 		};
 
+		if (myMap != null && myMap.getLocationClient() != null) {
+		    LocationClient locationClient = myMap.getLocationClient();
+		    LocationSorter.sort(locationDAO, locationClient, items);
+		}
 		// add cards to the view
-		// TODO how to sort
+		// TODO 2 stacks: with and without locations
 		for (Item i : items) {
 			Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId(), this);
 			card.setOnCardSwipedListener(onSwipeCardListener);

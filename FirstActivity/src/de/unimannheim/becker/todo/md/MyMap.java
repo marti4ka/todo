@@ -2,8 +2,8 @@ package de.unimannheim.becker.todo.md;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import android.content.Context;
 import android.location.Location;
@@ -39,7 +39,7 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 	private static final BitmapDescriptor UNMAPPED_ICON = BitmapDescriptorFactory
 			.defaultMarker(BitmapDescriptorFactory.HUE_RED);
 
-	private final Map<Marker, de.unimannheim.becker.todo.md.model.Location> marker2location = new WeakHashMap<>();
+	private final Map<Marker, de.unimannheim.becker.todo.md.model.Location> marker2location = new HashMap<>();
 	private final LocationDAO locationDao;
 	private GoogleMap mMap;
 	private LocationClient mLocationClient;
@@ -140,12 +140,12 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 
 		for (de.unimannheim.becker.todo.md.model.Location l : all) {
 			MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude())).icon(
-					UNMAPPED_ICON);
+					UNMAPPED_ICON).title(l.getTitle());
 			marker2location.put(mMap.addMarker(marker), l);
 		}
 		for (de.unimannheim.becker.todo.md.model.Location l : forItem) {
 			MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude())).icon(
-					MAPPED_ICON);
+					MAPPED_ICON).title(l.getTitle());
 			marker2location.put(mMap.addMarker(marker), l);
 		}
 	}

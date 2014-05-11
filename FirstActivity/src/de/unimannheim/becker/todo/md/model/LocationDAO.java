@@ -18,7 +18,7 @@ public class LocationDAO {
             + " m ON l._id=m.location_id INNER JOIN ITEMS i ON m.item_id=i._id WHERE i.archived=?";
     private static final String SELECT_LOCATIONS_FOR_ITEM = "SELECT l._id, l.latitude, l.longitude FROM "
             + LOCATIONS_TABLE + " l INNER JOIN " + MAPPING_TABLE + " m ON l._id=m.location_id WHERE m.item_id=?";
-    private static final String SELECT_LOCATION_TITLE_FROM_ACTIVE_ITEM = "SELECT i.title FROM ITEMS i INNER JOIN "
+    private static final String SELECT_LOCATION_TITLE_FROM_ACTIVE_ITEM = "SELECT i.title FROM ITEMS i LEFT JOIN "
             + MAPPING_TABLE + " m ON i._id=m.item_id WHERE m.location_id=? AND i.archived=0";
 
     private MyDatabaseHelper dbHelper;
@@ -70,7 +70,7 @@ public class LocationDAO {
                 if (mapped) {
                     Cursor titlesCursor = database.rawQuery(SELECT_LOCATION_TITLE_FROM_ACTIVE_ITEM, new String[] { String.valueOf(reminders[i].getId()) });
                     if(titlesCursor.moveToFirst()) {
-                        reminders[i].setTitle(mCursor.getString(mCursor.getColumnIndex("title")));
+                        reminders[i].setTitle(titlesCursor.getString(0));
                     }
                 }
                 mCursor.moveToNext();
