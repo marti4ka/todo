@@ -5,6 +5,8 @@ public class Location {
     private long id;
     private double latitude;
     private double longtitude;
+    private String title;
+    private boolean mapped;
 
     public Location() {
         super();
@@ -14,6 +16,22 @@ public class Location {
         super();
         this.latitude = latitude;
         this.longtitude = longtitude;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public boolean isMapped() {
+        return mapped;
+    }
+
+    public void setMapped(boolean mapped) {
+        this.mapped = mapped;
     }
 
     public long getId() {
