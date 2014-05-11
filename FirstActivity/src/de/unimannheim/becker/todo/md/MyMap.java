@@ -2,10 +2,13 @@ package de.unimannheim.becker.todo.md;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,6 +22,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -30,11 +34,16 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 		OnMyLocationButtonClickListener, OnMapLongClickListener, OnMarkerClickListener {
 
 	public static final int NO_ITEM = 0;
+	private static final BitmapDescriptor MAPPED_ICON = BitmapDescriptorFactory
+			.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
+	private static final BitmapDescriptor UNMAPPED_ICON = BitmapDescriptorFactory
+			.defaultMarker(BitmapDescriptorFactory.HUE_RED);
+
+	private final Map<Marker, de.unimannheim.becker.todo.md.model.Location> marker2location = new WeakHashMap<>();
+	private final LocationDAO locationDao;
 	private GoogleMap mMap;
 	private LocationClient mLocationClient;
 	private long itemId = 0;
-	private long locationId = 0;
-	private final LocationDAO locationDao;
 	OnMapLongClickListener listener;
 
 	public MyMap(GoogleMap mMap, Context context, LocationDAO locationDAO) {
@@ -116,6 +125,7 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 	}
 
 	public void addLocationsToMap() {
+		marker2location.clear();
 		mMap.clear();
 
 		ArrayList<de.unimannheim.becker.todo.md.model.Location> all = new ArrayList<de.unimannheim.becker.todo.md.model.Location>();
@@ -129,38 +139,54 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 		}
 
 		for (de.unimannheim.becker.todo.md.model.Location l : all) {
-			MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude()));
-			// TODO change color of marker to blue
-            mMap.addMarker(marker);
+			MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude())).icon(
+					UNMAPPED_ICON);
+			marker2location.put(mMap.addMarker(marker), l);
 		}
 		for (de.unimannheim.becker.todo.md.model.Location l : forItem) {
 			MarkerOptions marker = new MarkerOptions().position(new LatLng(l.getLatitude(), l.getLongtitude())).icon(
-					BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-			// TODO change color of marker to blue
-			mMap.addMarker(marker);
+					MAPPED_ICON);
+			marker2location.put(mMap.addMarker(marker), l);
 		}
 	}
 
 	@Override
 	public void onMapLongClick(LatLng point) {
-		// TODO if (addingLocation) {
-		MarkerOptions marker = new MarkerOptions().position(point).icon(
-				BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+		if (itemId == NO_ITEM) {
+			// no locations can be added
+			return;
+		}
+
 		de.unimannheim.becker.todo.md.model.Location location = new de.unimannheim.becker.todo.md.model.Location(
 				point.latitude, point.longitude);
 		locationDao.storeLocation(location);
-		locationId = location.getId();
 
-		mMap.addMarker(marker);
+		MarkerOptions marker = new MarkerOptions().position(point).icon(UNMAPPED_ICON);
+		marker2location.put(mMap.addMarker(marker), location);
 	}
 
 	@Override
 	public boolean onMarkerClick(Marker marker) {
 		if (itemId != NO_ITEM) {
-			marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-			locationDao.mapLocationToItem(locationId, itemId);
+			// map or unmap location to current item
+			de.unimannheim.becker.todo.md.model.Location l = marker2location.get(marker);
+			if (l == null) {
+				Log.w("todo", "Location not found for clicked marker.");
+				return false;
+			}
+
+			if (l.isMapped()) {
+				marker.setIcon(UNMAPPED_ICON);
+				l.setMapped(false);
+				locationDao.unMapLocationToItem(l.getId(), itemId);
+			} else {
+				marker.setIcon(MAPPED_ICON);
+				l.setMapped(true);
+				locationDao.mapLocationToItem(l.getId(), itemId);
+			}
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 }
