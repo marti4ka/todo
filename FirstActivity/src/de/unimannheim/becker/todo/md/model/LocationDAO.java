@@ -82,7 +82,10 @@ public class LocationDAO {
 	}
 
 	public boolean unMapLocationToItem(double locationId, double itemId) {
-		return false;
+        String where = LOCATION_ID + " =? AND " + ITEM_ID + " =?";
+        String[] args = {String.valueOf(locationId), String.valueOf(itemId)};
+        database.delete(MAPPING_TABLE, where, args);
+		return true;
 	}
 
 	private Location parseLocation(Cursor mCursor) {
