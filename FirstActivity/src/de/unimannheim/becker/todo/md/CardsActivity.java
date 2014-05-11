@@ -30,6 +30,7 @@ import de.unimannheim.becker.todo.md.model.LocationDAO;
 
 public class CardsActivity extends FragmentActivity {
 
+    private static final int MAP_MENU_INDEX = 1;
     private CardUI mCardView;
     private String[] mMenuListTitles;
     private DrawerLayout mDrawerLayout;
@@ -244,6 +245,14 @@ public class CardsActivity extends FragmentActivity {
         }
         super.onPause();
     }
+    
+    public void showMap(long itemId) {
+        loadMapView(itemId);
+        
+        mDrawerList.setItemChecked(MAP_MENU_INDEX, true);
+        setTitle(mMenuListTitles[MAP_MENU_INDEX]);
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
 
     /** Swaps fragments in the main content view */
     private void selectItem(int position) {
@@ -251,9 +260,9 @@ public class CardsActivity extends FragmentActivity {
         case 0:
             loadHomeView();
             break;
-        case 1:
-            loadMapView(MyMap.NO_ITEM);
-            break;
+        case MAP_MENU_INDEX:
+            showMap(MyMap.NO_ITEM);
+            return;
         case 3:
             loadArchivedView();
             break;

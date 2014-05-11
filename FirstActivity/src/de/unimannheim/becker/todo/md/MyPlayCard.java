@@ -62,7 +62,7 @@ class MyPlayCard extends RecyclableCard {
 							switch (item.getItemId()) {
 							case R.id.menu_add_location:
 //							    cardsActivity.myMap.setItemId(itemId);
-								cardsActivity.loadMapView(itemId);
+								cardsActivity.showMap(itemId);
 								return true;
 							case R.id.menu_edit:
 								return false;
