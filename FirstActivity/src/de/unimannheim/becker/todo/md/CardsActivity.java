@@ -1,8 +1,13 @@
 package de.unimannheim.becker.todo.md;
 
+import java.text.MessageFormat;
+
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
@@ -16,6 +21,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
 import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
@@ -30,6 +38,8 @@ import de.unimannheim.becker.todo.md.model.LocationDAO;
 
 public class CardsActivity extends FragmentActivity {
 
+	private static final String PREF_NOTIFICATION_RADIUS = "pref_notification_radius";
+	private static final String RADIUS_SETTING_FEEDBACK = "Notify me about tasks in {0} m radius.";
 	private static final int MAP_MENU_INDEX = 1;
 	private static final int SETTINGS_MENU_INDEX = 2;
 	private CardUI mCardView;
@@ -281,7 +291,43 @@ public class CardsActivity extends FragmentActivity {
 	private void showSettings() {
 		setContentView(R.layout.settings);
 
-		// TODO Auto-generated method stub
+		final TextView feedback = (TextView) findViewById(R.id.distance_feedback);
+		SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar_distance);
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CardsActivity.this);
+		seekBar.setProgress(prefs.getInt(PREF_NOTIFICATION_RADIUS, 200));
+
+		feedback.setText(MessageFormat.format(RADIUS_SETTING_FEEDBACK,
+				new String[] { String.valueOf(seekBar.getProgress()) }));
+		OnSeekBarChangeListener l = new OnSeekBarChangeListener() {
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				progress /= 50;
+				progress *= 50;
+				Editor edit = prefs.edit();
+				edit.putInt(PREF_NOTIFICATION_RADIUS, progress);
+				edit.commit();
+				feedback.setText(MessageFormat.format(RADIUS_SETTING_FEEDBACK,
+						new String[] { String.valueOf(progress) }));
+			}
+		};
+		seekBar.setOnSeekBarChangeListener(l);
+
+		mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_settings);
+		loadDrawer();
 	}
 
 	void loadMapView(long itemId) {
