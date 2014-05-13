@@ -3,6 +3,7 @@ package de.unimannheim.becker.todo.md;
 import java.text.MessageFormat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
@@ -12,6 +13,7 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -35,10 +37,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import de.unimannheim.becker.todo.md.model.Item;
 import de.unimannheim.becker.todo.md.model.ItemDAO;
 import de.unimannheim.becker.todo.md.model.LocationDAO;
+import de.unimannheim.becker.todo.md.notify.NotifyService;
 
 public class CardsActivity extends FragmentActivity {
+	public final static String LOG_TAG = "todo";
 
-	private static final String PREF_NOTIFICATION_RADIUS = "pref_notification_radius";
+	public static final int DEFAULT_NOTIFICATION_RADIUS = 200;
+	public static final String PREF_NOTIFICATION_RADIUS = "pref_notification_radius";
+
 	private static final String RADIUS_SETTING_FEEDBACK = "Notify me about tasks in {0} m radius.";
 	private static final int MAP_MENU_INDEX = 1;
 	private static final int SETTINGS_MENU_INDEX = 2;
@@ -61,6 +67,9 @@ public class CardsActivity extends FragmentActivity {
 		locationDAO = new LocationDAO(getApplicationContext());
 		mMenuListTitles = getResources().getStringArray(R.array.menu_array);
 		loadHomeView();
+
+		Log.v(CardsActivity.LOG_TAG, "starting service...");
+		startService(new Intent(this, NotifyService.class));
 	}
 
 	private void loadDrawer() {
@@ -294,7 +303,7 @@ public class CardsActivity extends FragmentActivity {
 		final TextView feedback = (TextView) findViewById(R.id.distance_feedback);
 		SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar_distance);
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CardsActivity.this);
-		seekBar.setProgress(prefs.getInt(PREF_NOTIFICATION_RADIUS, 200));
+		seekBar.setProgress(prefs.getInt(PREF_NOTIFICATION_RADIUS, DEFAULT_NOTIFICATION_RADIUS));
 
 		feedback.setText(MessageFormat.format(RADIUS_SETTING_FEEDBACK,
 				new String[] { String.valueOf(seekBar.getProgress()) }));
