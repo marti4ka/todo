@@ -1,6 +1,5 @@
 package de.unimannheim.becker.todo.md.notify;
 
-import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification.Builder;
@@ -8,12 +7,14 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import de.unimannheim.becker.todo.md.CardsActivity;
 import de.unimannheim.becker.todo.md.R;
+import de.unimannheim.becker.todo.md.model.Location;
+import de.unimannheim.becker.todo.md.model.LocationDAO;
 
-@SuppressLint("NewApi")
 public class NotifyService extends IntentService {
 	public static final int NOTIFICATION_ID = 2311;
 	private static final long NOTIFY_INTERVAL = 1 * 60 * 1000;
@@ -27,22 +28,44 @@ public class NotifyService extends IntentService {
 		// check todos in configured radius
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		int r = prefs.getInt(CardsActivity.PREF_NOTIFICATION_RADIUS, CardsActivity.DEFAULT_NOTIFICATION_RADIUS);
-		Log.v(CardsActivity.LOG_TAG, "checking todos in radius " + r + " m");
+		LocationManager locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+		android.location.Location loc = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		Location toShow = null;
+		if (loc != null) {
+			Log.v(CardsActivity.LOG_TAG,
+					"checking todos in radius " + r + " m from (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+			Location[] locs = new LocationDAO(getApplicationContext()).getAllLocationsForActiveItems();
+			for (Location todoLoc : locs) {
+				float[] results = new float[1];
+				android.location.Location.distanceBetween(loc.getLatitude(), loc.getLongitude(), todoLoc.getLatitude(),
+						todoLoc.getLongtitude(), results);
+				if (results[0] <= r) {
+					toShow = todoLoc;
+					break;
+				}
+			}
+		} else {
+			Log.v(CardsActivity.LOG_TAG, "location service is disabled");
+		}
 
-		// show notification
-		NotificationManager m = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		Builder b = new Builder(getApplicationContext());
-		b.setContentTitle("Todos nearby");
-		b.setContentText("Buy beer");
-		Intent i = new Intent(getApplicationContext(), CardsActivity.class);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 2223, i,
-				PendingIntent.FLAG_CANCEL_CURRENT);
-		b.setContentIntent(pi);
-		b.setAutoCancel(true);
-		b.setSmallIcon(R.drawable.ic_launcher);
-		m.notify(NOTIFICATION_ID, b.build());
-		Log.v(CardsActivity.LOG_TAG, "showed notification");
+		if (toShow != null) {
+			// show notification
+			NotificationManager m = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			Builder b = new Builder(getApplicationContext());
+			b.setContentTitle("Todos nearby");
+			b.setContentText(toShow.getTitle());
+			Intent i = new Intent(getApplicationContext(), CardsActivity.class);
+			i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+			PendingIntent pi = PendingIntent.getActivity(getApplicationContext(), 2223, i,
+					PendingIntent.FLAG_CANCEL_CURRENT);
+			b.setContentIntent(pi);
+			b.setAutoCancel(true);
+			b.setSmallIcon(R.drawable.ic_launcher);
+			m.notify(NOTIFICATION_ID, b.getNotification());
+			Log.v(CardsActivity.LOG_TAG, "showed notification");
+		} else {
+			Log.v(CardsActivity.LOG_TAG, "no todos nearby");
+		}
 
 		scheduleNextRun();
 	}
