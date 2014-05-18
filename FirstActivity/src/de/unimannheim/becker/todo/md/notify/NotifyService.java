@@ -18,6 +18,7 @@ import de.unimannheim.becker.todo.md.model.LocationDAO;
 public class NotifyService extends IntentService {
 	public static final int NOTIFICATION_ID = 2311;
 	public static final String SKIP_NOTIFICATION = "skipNotification";
+	private static final String SKIP_GPS_REQUEST = "skipGpsRequest";
 	private static final long NOTIFY_INTERVAL = 1 * 60 * 1000;
 
 	public NotifyService() {
@@ -26,8 +27,9 @@ public class NotifyService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		boolean skipNotification = intent.getBooleanExtra(SKIP_NOTIFICATION,
-				false);
+		boolean skipNotification = intent.getBooleanExtra(SKIP_NOTIFICATION, false);
+		boolean skipGpsRequest = intent.getBooleanExtra(SKIP_GPS_REQUEST, false);
+		
 		if (skipNotification) {
 			Log.v(CardsActivity.LOG_TAG,
 					"skipNotification is true, just scheduling next run");
@@ -61,11 +63,13 @@ public class NotifyService extends IntentService {
 					}
 				}
 			} else {
-				Log.v(CardsActivity.LOG_TAG,
-						"loc is null or outdated, dispatching gps request");
-				locManager.requestSingleUpdate(LocationManager.GPS_PROVIDER,
-						createPendingIntent());
-				return;
+				Log.v(CardsActivity.LOG_TAG, "loc is null or outdated");
+				if(!skipGpsRequest) {
+					Log.v(CardsActivity.LOG_TAG, "dispatching gps request");
+					locManager.requestSingleUpdate(LocationManager.GPS_PROVIDER,
+							createPendingIntent(true));
+					return;
+				}
 			}
 		} else {
 			Log.v(CardsActivity.LOG_TAG, "location service is disabled");
@@ -95,11 +99,12 @@ public class NotifyService extends IntentService {
 
 	private void scheduleNextRun() {
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-		am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + NOTIFY_INTERVAL, createPendingIntent());
+		am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + NOTIFY_INTERVAL, createPendingIntent(false));
 	}
 
-	private PendingIntent createPendingIntent() {
+	private PendingIntent createPendingIntent(boolean skipGpsRequest) {
 		Intent i = new Intent(getApplicationContext(), NotifyService.class);
+		i.putExtra(SKIP_GPS_REQUEST, skipGpsRequest);
 		PendingIntent pi = PendingIntent.getService(getApplicationContext(),
 				2222, i, PendingIntent.FLAG_CANCEL_CURRENT);
 		return pi;
