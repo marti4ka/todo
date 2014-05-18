@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
@@ -191,6 +192,7 @@ public class CardsActivity extends FragmentActivity {
 			public void onCardSwiped(Card card, View layout) {
 				itemDAO.archiveItem(((MyPlayCard) card).getItemId());
 				mCardView.removeCard(card);
+				Toast.makeText(getApplicationContext(), "Item archived", Toast.LENGTH_LONG).show();
 				if (mCardView.getTotalNumberOfCards() == 1)
 					loadFirstView();
 			}

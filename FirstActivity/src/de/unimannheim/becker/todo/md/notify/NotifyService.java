@@ -19,7 +19,7 @@ public class NotifyService extends IntentService {
 	public static final int NOTIFICATION_ID = 2311;
 	public static final String SKIP_NOTIFICATION = "skipNotification";
 	private static final String SKIP_GPS_REQUEST = "skipGpsRequest";
-	private static final long NOTIFY_INTERVAL = 1 * 60 * 1000;
+	private static final long NOTIFY_INTERVAL = 30 * 60 * 1000;
 
 	public NotifyService() {
 		super("@todo notify service");
