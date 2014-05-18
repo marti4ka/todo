@@ -17,6 +17,7 @@ import de.unimannheim.becker.todo.md.model.LocationDAO;
 
 public class NotifyService extends IntentService {
 	public static final int NOTIFICATION_ID = 2311;
+	public static final String SKIP_NOTIFICATION = "skipNotification";
 	private static final long NOTIFY_INTERVAL = 1 * 60 * 1000;
 
 	public NotifyService() {
@@ -25,24 +26,46 @@ public class NotifyService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		boolean skipNotification = intent.getBooleanExtra(SKIP_NOTIFICATION,
+				false);
+		if (skipNotification) {
+			Log.v(CardsActivity.LOG_TAG,
+					"skipNotification is true, just scheduling next run");
+			scheduleNextRun();
+			return;
+		}
+
 		// check todos in configured radius
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		int r = prefs.getInt(CardsActivity.PREF_NOTIFICATION_RADIUS, CardsActivity.DEFAULT_NOTIFICATION_RADIUS);
 		LocationManager locManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-		android.location.Location loc = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		Location toShow = null;
-		if (loc != null) {
-			Log.v(CardsActivity.LOG_TAG,
+
+		if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+			android.location.Location loc = locManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+			if (loc != null
+					&& loc.getTime() > System.currentTimeMillis()
+							- NOTIFY_INTERVAL / 2) {
+				Log.v(CardsActivity.LOG_TAG,
 					"checking todos in radius " + r + " m from (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
 			Location[] locs = new LocationDAO(getApplicationContext()).getAllLocationsForActiveItems();
-			for (Location todoLoc : locs) {
-				float[] results = new float[1];
+				for (Location todoLoc : locs) {
+					float[] results = new float[1];
 				android.location.Location.distanceBetween(loc.getLatitude(), loc.getLongitude(), todoLoc.getLatitude(),
 						todoLoc.getLongtitude(), results);
-				if (results[0] <= r) {
-					toShow = todoLoc;
-					break;
+					if (results[0] <= r) {
+						toShow = todoLoc;
+						break;
+					}
 				}
+			} else {
+				Log.v(CardsActivity.LOG_TAG,
+						"loc is null or outdated, dispatching gps request");
+				locManager.requestSingleUpdate(LocationManager.GPS_PROVIDER,
+						createPendingIntent());
+				return;
 			}
 		} else {
 			Log.v(CardsActivity.LOG_TAG, "location service is disabled");
@@ -71,11 +94,15 @@ public class NotifyService extends IntentService {
 	}
 
 	private void scheduleNextRun() {
-		Intent i = new Intent(getApplicationContext(), NotifyService.class);
-		PendingIntent pi = PendingIntent
-				.getService(getApplicationContext(), 2222, i, PendingIntent.FLAG_CANCEL_CURRENT);
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-		am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + NOTIFY_INTERVAL, pi);
+		am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + NOTIFY_INTERVAL, createPendingIntent());
+	}
+
+	private PendingIntent createPendingIntent() {
+		Intent i = new Intent(getApplicationContext(), NotifyService.class);
+		PendingIntent pi = PendingIntent.getService(getApplicationContext(),
+				2222, i, PendingIntent.FLAG_CANCEL_CURRENT);
+		return pi;
 	}
 
 }

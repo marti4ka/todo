@@ -69,7 +69,9 @@ public class CardsActivity extends FragmentActivity {
 		loadHomeView();
 
 		Log.v(CardsActivity.LOG_TAG, "starting service...");
-		startService(new Intent(this, NotifyService.class));
+		Intent service = new Intent(this, NotifyService.class);
+		service.putExtra(NotifyService.SKIP_NOTIFICATION, true);
+		startService(service);
 	}
 
 	private void loadDrawer() {
