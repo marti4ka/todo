@@ -48,6 +48,7 @@ public class CardsActivity extends FragmentActivity {
 	private static final String RADIUS_SETTING_FEEDBACK = "Notify me about tasks in {0} m radius.";
 	private static final int MAP_MENU_INDEX = 1;
 	private static final int SETTINGS_MENU_INDEX = 2;
+	private static final int ABOUT_MENU_INDEX = 4;
 	private CardUI mCardView;
 	private String[] mMenuListTitles;
 	private DrawerLayout mDrawerLayout;
@@ -294,9 +295,20 @@ public class CardsActivity extends FragmentActivity {
 		case 3:
 			loadArchivedView();
 			break;
+		case ABOUT_MENU_INDEX:
+			showAbout();
+			break;
 		}
 
 		updateMenu(position);
+	}
+
+	private void showAbout() {
+		setContentView(R.layout.about);
+		
+		mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_about);
+		loadDrawer();
 	}
 
 	private void showSettings() {
