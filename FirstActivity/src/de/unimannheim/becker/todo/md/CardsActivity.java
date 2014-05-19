@@ -192,7 +192,7 @@ public class CardsActivity extends FragmentActivity {
 			public void onCardSwiped(Card card, View layout) {
 				itemDAO.archiveItem(((MyPlayCard) card).getItemId());
 				mCardView.removeCard(card);
-				Toast.makeText(getApplicationContext(), "Item archived", Toast.LENGTH_LONG).show();
+				Toast.makeText(getApplicationContext(), "Item archived", Toast.LENGTH_SHORT).show();
 				if (mCardView.getTotalNumberOfCards() == 1)
 					loadFirstView();
 			}

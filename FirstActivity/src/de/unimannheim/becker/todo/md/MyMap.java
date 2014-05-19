@@ -45,11 +45,13 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 	private LocationClient mLocationClient;
 	private long itemId = 0;
 	OnMapLongClickListener listener;
+    private Context appContext;
 
 	public MyMap(GoogleMap mMap, Context context, LocationDAO locationDAO) {
 		this.mMap = mMap;
 		this.locationDao = locationDAO;
 		if (mLocationClient == null) {
+		    this.appContext = context;
 			this.mLocationClient = new LocationClient(context, this, this);
 			this.mLocationClient.connect();
 			this.mMap.setMyLocationEnabled(true);
@@ -163,6 +165,7 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 
 		MarkerOptions marker = new MarkerOptions().position(point).icon(UNMAPPED_ICON);
 		marker2location.put(mMap.addMarker(marker), location);
+		Toast.makeText(appContext, "Location created", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -178,10 +181,12 @@ public class MyMap implements ConnectionCallbacks, OnConnectionFailedListener, L
 			if (l.isMapped()) {
 				marker.setIcon(UNMAPPED_ICON);
 				l.setMapped(false);
+				Toast.makeText(appContext, "Location unattached", Toast.LENGTH_SHORT).show();
 				locationDao.unMapLocationToItem(l.getId(), itemId);
 			} else {
 				marker.setIcon(MAPPED_ICON);
 				l.setMapped(true);
+				Toast.makeText(appContext, "Location added", Toast.LENGTH_SHORT).show();
 				locationDao.mapLocationToItem(l.getId(), itemId);
 			}
 			return true;
