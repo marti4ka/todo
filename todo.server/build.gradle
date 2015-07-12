@@ -1,0 +1,5 @@
+apply plugin: 'war'
+
+war {
+    baseName = 'todo'
+}
