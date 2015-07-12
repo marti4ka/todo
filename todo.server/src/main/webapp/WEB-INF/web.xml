@@ -10,10 +10,18 @@
 		<servlet-name>qrservlet</servlet-name>
 		<servlet-class>com.droidcluster.todo.server.QRServlet</servlet-class>
 	</servlet>
-
 	<servlet-mapping>
 		<servlet-name>qrservlet</servlet-name>
-		<url-pattern>/qr/*</url-pattern>
+		<url-pattern>/qr</url-pattern>
+	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>todoservlet</servlet-name>
+		<servlet-class>com.droidcluster.todo.server.NotesServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>todoservlet</servlet-name>
+		<url-pattern>/notes/*</url-pattern>
 	</servlet-mapping>
 
 </web-app>

@@ -17,9 +17,14 @@ public class QRServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		byte[] qr = QRCode.from(UUID.randomUUID().toString()).to(ImageType.PNG)
-				.stream().toByteArray();
+		int pathLength = req.getServletPath().length();
+		String url = req.getRequestURL().toString();
+		url = url.substring(0, url.length() - pathLength);
+		url = url + "/" + UUID.randomUUID();
+		// resp.getOutputStream().write(url.getBytes());
 
+		byte[] qr = QRCode.from(url).to(ImageType.PNG).withSize(250, 250)
+				.stream().toByteArray();
 		resp.setContentLength(qr.length);
 		resp.setContentType("image/png");
 		resp.getOutputStream().write(qr);
