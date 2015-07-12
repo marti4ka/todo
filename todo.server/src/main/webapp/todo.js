@@ -5,7 +5,7 @@ todoApp.service('dataService', function($http) {
 	this.getData = function(callbackFunc) {
 		$http({
 			method : 'GET',
-			url : 'http://localhost:8080/todo/notes/blah',
+			url : 'notes/blah',
 		// params : 'limit=10, sort_by=created:desc',
 		// headers : {
 		// 'Authorization' : 'Token token=xxxxYYYYZzzz'
