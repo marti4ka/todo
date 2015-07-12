@@ -1,5 +1,16 @@
 apply plugin: 'war'
 
+repositories {
+    maven {
+        url "http://repo1.maven.org/maven2"
+    }
+}
+
+dependencies {
+    compile "net.glxn.qrgen:javase:2.0"
+    compile "javax.servlet:servlet-api:2.5"
+}
+
 war {
     baseName = 'todo'
 }
