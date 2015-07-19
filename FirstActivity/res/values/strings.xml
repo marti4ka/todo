@@ -3,6 +3,7 @@
     <string-array name="menu_array">
         <item>Home</item>
         <item>Map</item>
+        <item>Online</item>
         <item>Settings</item>
         <item>Archive</item>
         <item>About</item>

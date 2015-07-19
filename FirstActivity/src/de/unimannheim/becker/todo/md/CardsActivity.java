@@ -24,9 +24,9 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fima.cardsui.objects.Card;
 import com.fima.cardsui.objects.Card.OnCardSwiped;
@@ -39,17 +39,19 @@ import de.unimannheim.becker.todo.md.model.Item;
 import de.unimannheim.becker.todo.md.model.ItemDAO;
 import de.unimannheim.becker.todo.md.model.LocationDAO;
 import de.unimannheim.becker.todo.md.notify.NotifyService;
+import eu.livotov.zxscan.ScannerView;
 
 public class CardsActivity extends FragmentActivity {
+	private enum MenuIndex {
+		HOME, MAP, ONLINE, SETTINGS, ARCHIVE, ABOUT;
+	}
+	
 	public final static String LOG_TAG = "todo";
 
 	public static final int DEFAULT_NOTIFICATION_RADIUS = 200;
 	public static final String PREF_NOTIFICATION_RADIUS = "pref_notification_radius";
 
 	private static final String RADIUS_SETTING_FEEDBACK = "Notify me about tasks in {0} m radius.";
-	private static final int MAP_MENU_INDEX = 1;
-	private static final int SETTINGS_MENU_INDEX = 2;
-	private static final int ABOUT_MENU_INDEX = 4;
 	private CardUI mCardView;
 	private String[] mMenuListTitles;
 	private DrawerLayout mDrawerLayout;
@@ -256,6 +258,8 @@ public class CardsActivity extends FragmentActivity {
 	};
 	private View mapFragment;
 
+	private ScannerView qrScanner;
+
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
 		public void onItemClick(AdapterView parent, View view, int position, long id) {
@@ -273,7 +277,7 @@ public class CardsActivity extends FragmentActivity {
 
 	public void showMap(long itemId) {
 		loadMapView(itemId);
-		updateMenu(MAP_MENU_INDEX);
+		updateMenu(MenuIndex.MAP.ordinal());
 	}
 
 	private void updateMenu(int menuIndex) {
@@ -284,25 +288,73 @@ public class CardsActivity extends FragmentActivity {
 
 	/** Swaps fragments in the main content view */
 	private void selectItem(int position) {
-		switch (position) {
-		case 0:
+		if(qrScanner != null) {
+			qrScanner.stopScanner();
+			qrScanner = null;
+		}
+		
+		switch (MenuIndex.values()[position]) {
+		case HOME:
 			loadHomeView();
 			break;
-		case MAP_MENU_INDEX:
+		case MAP:
 			showMap(MyMap.NO_ITEM);
 			return;
-		case SETTINGS_MENU_INDEX:
+		case SETTINGS:
 			showSettings();
 			break;
-		case 3:
+		case ARCHIVE:
 			loadArchivedView();
 			break;
-		case ABOUT_MENU_INDEX:
+		case ABOUT:
 			showAbout();
+			break;
+		case ONLINE:
+			showOnline();
 			break;
 		}
 
 		updateMenu(position);
+	}
+	
+	private void showOnline() {
+		setContentView(R.layout.online);
+
+		qrScanner = (ScannerView) findViewById(R.id.qrscanner);
+		qrScanner.setScannerViewEventListener(new ScannerView.ScannerViewEventListener() {
+			public boolean onCodeScanned(final String data) {
+				qrScanner.stopScanner();
+				
+				Toast.makeText(CardsActivity.this, "POST items to " + data,
+						Toast.LENGTH_LONG).show();
+				
+				return true;
+			}
+
+			@Override
+			public void onScannerReady() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onScannerStopped() {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onScannerFailure(int cameraError) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		qrScanner.startScanner();
+		
+		mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_online);
+		loadDrawer();
 	}
 
 	private void showAbout() {
