@@ -5,6 +5,9 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+	<listener>
+		<listener-class>com.droidcluster.todo.server.HttpSessionCollector</listener-class>
+	</listener>
 
 	<servlet>
 		<servlet-name>qrservlet</servlet-name>

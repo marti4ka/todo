@@ -2,28 +2,47 @@ var todoApp = angular.module('todoApp', []);
 
 todoApp.service('dataService', function($http) {
 	delete $http.defaults.headers.common['X-Requested-With'];
-	this.getData = function(callbackFunc) {
+	this.getData = function(uuid, callbackFunc) {
 		$http({
 			method : 'GET',
-			url : 'notes/blah',
+			url : 'notes/' + uuid,
+		// params : 'limit=10, sort_by=created:desc',
+		// headers : {
+		// 'Authorization' : 'Token token=xxxxYYYYZzzz'
+		// }
+		}).success(function(data, status, headers, config) {
+			// With the data successfully returned, call our callback
+			callbackFunc(data, headers()['notes-id']);
+		}).error(function() {
+			alert("error");
+		});
+	}
+	
+	this.postData = function(uuid, data) {
+		$http({
+			method : 'POST',
+			url : 'notes/' + uuid,
+			data : data,
 		// params : 'limit=10, sort_by=created:desc',
 		// headers : {
 		// 'Authorization' : 'Token token=xxxxYYYYZzzz'
 		// }
 		}).success(function(data) {
 			// With the data successfully returned, call our callback
-			callbackFunc(data);
+			// callbackFunc(data);
 		}).error(function() {
 			alert("error");
 		});
 	}
 });
 
-todoApp.controller('TodoListController', function(dataService) {
-	var todoList = this;
-	dataService.getData(function(data) {
-		todoList.todos = data;
-	});
+todoApp.controller('TodoListController',
+	    function(dataService) {
+			var todoList = this;
+			dataService.getData(todoList.uuid, function(data, uuid) {
+				todoList.todos = data;
+				todoList.uuid = uuid;
+		});
 
 	todoList.addTodo = function() {
 		todoList.todos.push({
@@ -31,6 +50,7 @@ todoApp.controller('TodoListController', function(dataService) {
 			done : false
 		});
 		todoList.todoText = '';
+		dataService.postData(todoList.uuid, todoList.todos);
 	};
 
 	todoList.remaining = function() {

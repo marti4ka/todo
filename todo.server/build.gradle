@@ -9,6 +9,8 @@ repositories {
 dependencies {
     compile "net.glxn.qrgen:javase:2.0"
     compile "javax.servlet:servlet-api:2.5"
+    compile "com.fasterxml.jackson.core:jackson-core:2.6.0"
+    compile "commons-io:commons-io:2.4"
 }
 
 war {
