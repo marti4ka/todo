@@ -2,6 +2,9 @@ package de.unimannheim.becker.todo.md;
 
 import java.text.MessageFormat;
 
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -45,7 +48,7 @@ public class CardsActivity extends FragmentActivity {
 	private enum MenuIndex {
 		HOME, MAP, ONLINE, SETTINGS, ARCHIVE, ABOUT;
 	}
-	
+
 	public final static String LOG_TAG = "todo";
 
 	public static final int DEFAULT_NOTIFICATION_RADIUS = 200;
@@ -82,12 +85,15 @@ public class CardsActivity extends FragmentActivity {
 		mTitle = mDrawerTitle = getTitle();
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
-		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow,
+				GravityCompat.START);
 		// set up the drawer's list view with items and click listener
-		mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mMenuListTitles));
+		mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+				R.layout.drawer_list_item, mMenuListTitles));
 
 		// Set the adapter for the list view
-		mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mMenuListTitles));
+		mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+				R.layout.drawer_list_item, mMenuListTitles));
 		// Set the list's click listener
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -163,14 +169,17 @@ public class CardsActivity extends FragmentActivity {
 			float y = event.getRawY() + w.getTop() - scrcoords[1];
 
 			if (event.getAction() == MotionEvent.ACTION_UP
-					&& (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w.getBottom())) {
+					&& (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w
+							.getBottom())) {
 				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.hideSoftInputFromWindow(getWindow().getCurrentFocus().getWindowToken(), 0);
+				imm.hideSoftInputFromWindow(getWindow().getCurrentFocus()
+						.getWindowToken(), 0);
 				EditText editTitle = (EditText) findViewById(R.id.editTitle);
 				EditText editDesc = (EditText) findViewById(R.id.editDescription);
 				String title = editTitle.getText().toString();
 				String desc = editDesc.getText().toString();
-				if ((title != null && !title.equals("")) || (desc != null && !desc.equals(""))) {
+				if ((title != null && !title.equals(""))
+						|| (desc != null && !desc.equals(""))) {
 					Item newItem = new Item();
 					newItem.setTitle(title);
 					newItem.setDescription(desc);
@@ -194,7 +203,8 @@ public class CardsActivity extends FragmentActivity {
 			public void onCardSwiped(Card card, View layout) {
 				itemDAO.archiveItem(((MyPlayCard) card).getItemId());
 				mCardView.removeCard(card);
-				Toast.makeText(getApplicationContext(), "Item archived", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), "Item archived",
+						Toast.LENGTH_SHORT).show();
 				if (mCardView.getTotalNumberOfCards() == 1)
 					loadFirstView();
 			}
@@ -207,7 +217,8 @@ public class CardsActivity extends FragmentActivity {
 		// add cards to the view
 		// TODO 2 stacks: with and without locations
 		for (Item i : items) {
-			Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId(), this);
+			Card card = new MyPlayCard(i.getTitle(), i.getDescription(),
+					i.getId(), this);
 			card.setOnCardSwipedListener(onSwipeCardListener);
 			mCardView.addCardToLastStack(card);
 		}
@@ -260,16 +271,19 @@ public class CardsActivity extends FragmentActivity {
 
 	private ScannerView qrScanner;
 
-	private class DrawerItemClickListener implements ListView.OnItemClickListener {
+	private class DrawerItemClickListener implements
+			ListView.OnItemClickListener {
 		@Override
-		public void onItemClick(AdapterView parent, View view, int position, long id) {
+		public void onItemClick(AdapterView parent, View view, int position,
+				long id) {
 			selectItem(position);
 		}
 	}
 
 	@Override
 	public void onPause() {
-		if (myMap != null && myMap.getLocationClient() != null && myMap.getLocationClient().isConnected()) {
+		if (myMap != null && myMap.getLocationClient() != null
+				&& myMap.getLocationClient().isConnected()) {
 			myMap.getLocationClient().disconnect();
 		}
 		super.onPause();
@@ -288,11 +302,11 @@ public class CardsActivity extends FragmentActivity {
 
 	/** Swaps fragments in the main content view */
 	private void selectItem(int position) {
-		if(qrScanner != null) {
+		if (qrScanner != null) {
 			qrScanner.stopScanner();
 			qrScanner = null;
 		}
-		
+
 		switch (MenuIndex.values()[position]) {
 		case HOME:
 			loadHomeView();
@@ -316,42 +330,54 @@ public class CardsActivity extends FragmentActivity {
 
 		updateMenu(position);
 	}
-	
+
 	private void showOnline() {
 		setContentView(R.layout.online);
 
 		qrScanner = (ScannerView) findViewById(R.id.qrscanner);
-		qrScanner.setScannerViewEventListener(new ScannerView.ScannerViewEventListener() {
-			public boolean onCodeScanned(final String data) {
-				qrScanner.stopScanner();
-				
-				Toast.makeText(CardsActivity.this, "POST items to " + data,
-						Toast.LENGTH_LONG).show();
-				
-				return true;
-			}
+		qrScanner
+				.setScannerViewEventListener(new ScannerView.ScannerViewEventListener() {
+					public boolean onCodeScanned(final String data) {
+						qrScanner.stopScanner();
 
-			@Override
-			public void onScannerReady() {
-				// TODO Auto-generated method stub
-				
-			}
+						SyncTodosTask task = new SyncTodosTask(data, itemDAO) {
+							@Override
+							protected void onPostExecute(StatusLine result) {
+								String msg = result != null
+										&& result.getStatusCode() == HttpStatus.SC_OK ? "Refresh your browser."
+										: "Too bad, an error occured.";
+								loadHomeView();
+								Toast.makeText(CardsActivity.this, msg,
+										Toast.LENGTH_LONG).show();
+							}
+						};
 
-			@Override
-			public void onScannerStopped() {
-				// TODO Auto-generated method stub
-				
-			}
+						task.execute();
 
-			@Override
-			public void onScannerFailure(int cameraError) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		
+						return true;
+					}
+
+					@Override
+					public void onScannerReady() {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onScannerStopped() {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onScannerFailure(int cameraError) {
+						// TODO Auto-generated method stub
+
+					}
+				});
+
 		qrScanner.startScanner();
-		
+
 		mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_online);
 		loadDrawer();
@@ -359,7 +385,7 @@ public class CardsActivity extends FragmentActivity {
 
 	private void showAbout() {
 		setContentView(R.layout.about);
-		
+
 		mDrawerList = (ListView) findViewById(R.id.left_drawer_first);
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout_about);
 		loadDrawer();
@@ -370,8 +396,10 @@ public class CardsActivity extends FragmentActivity {
 
 		final TextView feedback = (TextView) findViewById(R.id.distance_feedback);
 		SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar_distance);
-		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(CardsActivity.this);
-		seekBar.setProgress(prefs.getInt(PREF_NOTIFICATION_RADIUS, DEFAULT_NOTIFICATION_RADIUS));
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(CardsActivity.this);
+		seekBar.setProgress(prefs.getInt(PREF_NOTIFICATION_RADIUS,
+				DEFAULT_NOTIFICATION_RADIUS));
 
 		feedback.setText(MessageFormat.format(RADIUS_SETTING_FEEDBACK,
 				new String[] { String.valueOf(seekBar.getProgress()) }));
@@ -390,7 +418,8 @@ public class CardsActivity extends FragmentActivity {
 			}
 
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
 				progress /= 50;
 				progress *= 50;
 				Editor edit = prefs.edit();
@@ -418,7 +447,8 @@ public class CardsActivity extends FragmentActivity {
 		loadDrawer();
 		// null check to confirm that we have not already instantiated the map.
 		if (myMap == null) {
-			myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap(),
+			myMap = new MyMap(((SupportMapFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.map)).getMap(),
 					getApplicationContext(), locationDAO);
 		}
 		myMap.setItemId(itemId);
@@ -466,7 +496,8 @@ public class CardsActivity extends FragmentActivity {
 		mCardView.addStack(stack);
 		Item[] archivedItems = itemDAO.getArchived();
 		for (Item i : archivedItems) {
-			Card card = new MyPlayCard(i.getTitle(), i.getDescription(), i.getId(), this);
+			Card card = new MyPlayCard(i.getTitle(), i.getDescription(),
+					i.getId(), this);
 			mCardView.addCardToLastStack(card);
 		}
 		mCardView.refresh();
