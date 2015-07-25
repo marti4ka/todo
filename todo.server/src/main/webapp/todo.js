@@ -46,7 +46,7 @@ todoApp.controller('TodoListController',
 
 	todoList.addTodo = function() {
 		todoList.todos.push({
-			text : todoList.todoText,
+			title : todoList.todoText,
 			done : false
 		});
 		todoList.todoText = '';
