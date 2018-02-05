@@ -13,5 +13,3 @@ Different circle colors code different categories :bowtie:
 The second part of this app involves a server side. You can open the website on your PC and scan the QR code with the app on your phone.
 The phone will send a push notification with the existing tasks and you will see them on the PC. You can then edit on both devices :neckbeard:
 
-##
-P.S. Don't get confused by all the committers. I was working on multiple machines :flushed: :grimacing:
